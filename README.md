@@ -73,3 +73,49 @@ pedido_itens (
 	subtotal DECIMAL(10,2) NOT NULL
 )
 ```
+## Bounded context do sistema:
+
+### Contexto de Identidade e Acesso (Identity & Access)
+ linguagem ubíqua: Role, autentificação, autorização, endereço 
+ Entidades chave: Users
+ Responsabilidades: Autenticação, troca de senha, definição de permissões globais.
+
+### Contexto de Catálogo e Cardápio (Menu Management)
+ linguagem ubíqua: nome do restaurante, produtos, preço, gestor 
+ Entidades: Restaurante, Produto (Menu Item).
+ Responsabilidades: Cadastro de pratos, alteração de preços, disponibilidade de estoque, gestão das informações do estabelecimento.
+
+### Contexto de Vendas e Pedidos (Ordering)
+ linguagem ubíqua: status, restaurante, tempo, valor total
+ Entidades: Pedido (Order), Item do Pedido (OrderItem), Cliente (Customer Snapshot).
+ Responsabilidades: Cálculo do total, fluxo de status do pedido (PENDENTE -> ENTREGUE), registro do endereço de entrega no momento da compra.
+
+## Estrutura de pastas(Cean architecture)
+Exemplo:
+src/
+├── modules/
+│   ├── ordering/
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   ├── order.entity.ts          
+│   │   │   │   └── order-item.entity.ts     
+│   │   │   ├── repositories/
+│   │   │   │   └── i-order.repository.ts    
+│   │   ├── application/
+│   │   │   ├── use-cases/
+│   │   │   │   └── create-order.usecase.ts  
+│   │   │   └── dtos/
+│   │   │       └── create-order.dto.ts      
+│   │   ├── infrastructure/
+│   │   │   ├── persistence/
+│   │   │   │   ├── typeorm/                 
+│   │   │   │   │   ├── models/
+│   │   │   │   │   │   ├── order.model.ts 
+│   │   │   │   │   │   └── item.model.ts    
+│   │   │   │   │   └── repositories/
+│   │   │   │   │       └── pg-order.repo.ts #
+│   │   │   │   └── mappers/
+│   │   │   │       └── order.mapper.ts      
+│   │   └── presentation/
+│   │       └── http/
+│   │           └── order.controller.ts      
