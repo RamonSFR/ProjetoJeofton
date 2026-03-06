@@ -92,30 +92,5 @@ pedido_itens (
 
 ## Estrutura de pastas(Cean architecture)
 Exemplo:
-src/
-├── modules/
-│   ├── ordering/
-│   │   ├── domain/
-│   │   │   ├── entities/
-│   │   │   │   ├── order.entity.ts          
-│   │   │   │   └── order-item.entity.ts     
-│   │   │   ├── repositories/
-│   │   │   │   └── i-order.repository.ts    
-│   │   ├── application/
-│   │   │   ├── use-cases/
-│   │   │   │   └── create-order.usecase.ts  
-│   │   │   └── dtos/
-│   │   │       └── create-order.dto.ts      
-│   │   ├── infrastructure/
-│   │   │   ├── persistence/
-│   │   │   │   ├── typeorm/                 
-│   │   │   │   │   ├── models/
-│   │   │   │   │   │   ├── order.model.ts 
-│   │   │   │   │   │   └── item.model.ts    
-│   │   │   │   │   └── repositories/
-│   │   │   │   │       └── pg-order.repo.ts #
-│   │   │   │   └── mappers/
-│   │   │   │       └── order.mapper.ts      
-│   │   └── presentation/
-│   │       └── http/
-│   │           └── order.controller.ts      
+
+<img width="685" height="582" alt="Captura de Tela (59)" src="https://github.com/user-attachments/assets/086c922f-f492-4405-bb75-d44dc672df4c" />
