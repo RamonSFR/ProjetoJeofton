@@ -21,7 +21,7 @@ A aplicação serve para:
 - Ramon Sávio
 - Adijair Araújo
 - Rafael
-- Iago
+- Iago Veras de Melo
 
 ## Modelo das entidades
 
