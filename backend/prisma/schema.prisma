@@ -13,12 +13,57 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Status {
+  PENDENTE
+  CONFIRMADO
+  EM_PREPARO
+  SAIU_PARA_ENTREGA
+  ENTREGUE
+  CANCELADO
+}
+
 model User{
   id Int @id @default(autoincrement())
-  nome String
+  cpf String
+  name String
   email String @unique
-  senha String 
+  password String 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  stores Store[]
   @@map("users")
+}
+
+model Store{
+  id Int @id @default(autoincrement())
+  name String 
+  gestor_id Int 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gestor User @relation(fields: [gestor_id], references: [id])
+  products Product[]
+  @@map("stores")
+}
+
+model Product{
+  id Int @id @default(autoincrement())
+  store_id Int 
+  name String
+  price Decimal @db.Decimal(10,2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  store Store @relation(fields: [store_id] references: [id])
+  @@map("products")
+}
+
+model Order{
+  id Int @id @default(autoincrement())
+  restaurante_id Int
+  cliente_id Int
+  total Decimal @db.Decimal(10,2)
+  
+  itens_pedido PedidoItem[]
+  @@map("orders")
 }
