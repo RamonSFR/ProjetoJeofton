@@ -24,7 +24,7 @@ enum Status {
 
 model User{
   id Int @id @default(autoincrement())
-  cpf String
+  cpf String @unique
   name String
   email String @unique
   password String 
@@ -32,6 +32,7 @@ model User{
   updatedAt DateTime @updatedAt
 
   stores Store[]
+  orders Order[]
   @@map("users")
 }
 
@@ -44,6 +45,7 @@ model Store{
 
   gestor User @relation(fields: [gestor_id], references: [id])
   products Product[]
+  orders Order[]
   @@map("stores")
 }
 
@@ -54,16 +56,35 @@ model Product{
   price Decimal @db.Decimal(10,2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  store Store @relation(fields: [store_id] references: [id])
+  store Store @relation(fields: [store_id], references: [id])
+
+  pedido_itens PedidoItem[]
   @@map("products")
 }
 
 model Order{
   id Int @id @default(autoincrement())
-  restaurante_id Int
+  store_id Int
   cliente_id Int
   total Decimal @db.Decimal(10,2)
-  
+  status Status @default(PENDENTE)
   itens_pedido PedidoItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  store Store @relation(fields: [store_id], references: [id])
+  cliente User @relation(fields: [cliente_id], references: [id])
   @@map("orders")
+}
+
+model PedidoItem{
+  id Int @id @default(autoincrement())
+  order_id Int
+  product_id Int
+  quantidade Int 
+  preco_unitario Decimal @db.Decimal(10,2)
+
+  order Order @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+  @@map("pedido_itens")
 }
