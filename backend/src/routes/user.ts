@@ -1,13 +1,41 @@
-import { Router } from "express";
+import { Router } from 'express';
 import * as userController from '../controllers/User/UserController';
+import { validateRequest } from '../middleware/validate-request';
+import {
+  createUserBodySchema,
+  getUserByEmailQuerySchema,
+  updateUserBodySchema,
+  userIdParamSchema,
+} from '../validation/user-validation';
 
 const router = Router();
 
 router.get('/users', userController.getAll);
-router.get('/users/email', userController.getByEmail);
-router.get('/users/:id', userController.getById);
-router.post('/users', userController.create);
-router.put('/users/:id', userController.update);
-router.delete('/users/:id', userController.remove);
+router.get(
+  '/users/email',
+  validateRequest(getUserByEmailQuerySchema, 'query'),
+  userController.getByEmail
+);
+router.get(
+  '/users/:id',
+  validateRequest(userIdParamSchema, 'params'),
+  userController.getById
+);
+router.post(
+  '/users',
+  validateRequest(createUserBodySchema, 'body'),
+  userController.create
+);
+router.put(
+  '/users/:id',
+  validateRequest(userIdParamSchema, 'params'),
+  validateRequest(updateUserBodySchema, 'body'),
+  userController.update
+);
+router.delete(
+  '/users/:id',
+  validateRequest(userIdParamSchema, 'params'),
+  userController.remove
+);
 
 export default router;
