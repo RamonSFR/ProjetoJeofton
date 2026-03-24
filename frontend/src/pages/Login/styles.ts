@@ -59,3 +59,38 @@ export const FormTitle = styled.h2`
   color: ${c.red1};
   font-weight: 700;
 `
+
+export const SelectLoginButtons = styled.div`
+  display: flex;
+  margin-bottom: 16px;
+`
+
+export const LoginButton = styled.button`
+  width: 128px;
+  cursor: pointer;
+  padding: 8px 16px;
+  background-color: ${c.gray2};
+  border: none;
+  text-align: center;
+  color: ${c.red2};
+
+  &.isActive {
+    background-color: ${c.red3};
+    color: ${c.white1};
+  }
+
+  &.left {
+    border-radius: 12px 0 0 12px;
+    border-left: 2px solid ${c.red1};
+  }
+
+  &.right {
+    border-radius: 0 12px 12px 0;
+    border-right: 2px solid ${c.red1};
+  }
+
+  &.right, &.left {
+    border-bottom: 2px solid ${c.red1};
+    border-top: 2px solid ${c.red1};
+  }
+`
