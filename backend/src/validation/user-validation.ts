@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
+
 const cpfSchema = z
   .string()
   .trim()
@@ -27,7 +31,18 @@ export const getUserByEmailQuerySchema = z.object({
   email: z.string().trim().email('E-mail invalido'),
 });
 
+export const getUsersQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(DEFAULT_PAGE),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_PAGE_SIZE, `pageSize deve ser no maximo ${MAX_PAGE_SIZE}`)
+    .default(DEFAULT_PAGE_SIZE),
+});
+
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 export type UserIdParam = z.infer<typeof userIdParamSchema>;
 export type GetUserByEmailQuery = z.infer<typeof getUserByEmailQuerySchema>;
+export type GetUsersQuery = z.infer<typeof getUsersQuerySchema>;

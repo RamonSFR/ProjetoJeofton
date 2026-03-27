@@ -3,16 +3,17 @@ import * as userService from '../../services/User/userService';
 import type {
   CreateUserBody,
   GetUserByEmailQuery,
+  GetUsersQuery,
   UpdateUserBody,
   UserIdParam,
 } from '../../validation/user-validation';
 
-export const getAll = async (_req: Request, res: Response): Promise<void> => {
+export const getAll = async (req: Request, res: Response): Promise<void> => {
+  const { page, pageSize } = req.validatedQuery as GetUsersQuery;
   try {
-    const users = await userService.getAll();
-    res.status(200).json(users);
-  } catch (err){
-    console.log(err);
+    const result = await userService.getPaginated({ page, pageSize });
+    res.status(200).json(result);
+  } catch {
     res.status(500).json({ message: 'Erro ao buscar usuarios.' });
   }
 };

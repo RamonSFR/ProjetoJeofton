@@ -4,13 +4,18 @@ import { validateRequest } from '../middleware/validate-request';
 import {
   createUserBodySchema,
   getUserByEmailQuerySchema,
+  getUsersQuerySchema,
   updateUserBodySchema,
   userIdParamSchema,
 } from '../validation/user-validation';
 
 const router = Router();
 
-router.get('/users', userController.getAll);
+router.get(
+  '/users',
+  validateRequest(getUsersQuerySchema, 'query'),
+  userController.getAll
+);
 router.get(
   '/users/email',
   validateRequest(getUserByEmailQuerySchema, 'query'),
