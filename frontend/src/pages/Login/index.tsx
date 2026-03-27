@@ -10,7 +10,7 @@ const Login = () => {
   return (
 
     <S.Container>
-      <h1>EFOOD</h1>
+      <h1>Ifome</h1>
 
       <S.SelectLoginButtons>
         <S.LoginButton onClick={() => setLoginState("cliente")} className={`left ${loginState === "cliente" ? "isActive" : ""}`}>Cliente</S.LoginButton>

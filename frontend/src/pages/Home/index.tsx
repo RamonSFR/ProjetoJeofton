@@ -1,5 +1,8 @@
-const Home = () => {
-  return <h1>EFOOD</h1>
-}
+import Header from '../../components/Header'
 
+const Home = () => {
+  return (
+    <Header />
+  )
+}
 export default Home
