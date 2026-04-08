@@ -1,135 +1,230 @@
-﻿# Restaurant Endpoints
+# API de restaurantes (`/restaurants`)
 
-## Visão Geral
-API de gerenciamento de restaurantes com CRUD completo e validação por Zod + middleware alidateRequest.
+Base URL local (padrao): `http://localhost:3000`  
+Ajuste host/porta conforme `PORT` no `.env`.
 
-Base URL: /restaurants
+**Headers comuns**
 
----
+- `Content-Type: application/json` - obrigatorio em rotas com body (`POST`, `PUT`).
 
-## 1) Criar restaurante
+**Erro de validacao (400)**
 
-- Método: POST
-- URL: /restaurants
-- Validação: createRestaurantSchema (body)
+Quando query, params ou body nao passam no Zod:
 
-### Corpo (JSON) de exemplo
-`json
+```json
 {
-   name: Pizzaria do Bairro,
-  managerId: 5
+  "message": "Dados invalidos",
+  "errors": {
+    "campo": ["mensagem do erro"]
+  },
+  "formErrors": []
 }
-`
+```
 
-### Campos
-- 
-ame (string, obrigatório, mínimo 2 caracteres)
-- managerId (número inteiro positivo, obrigatório)
-
-### Respostas
-- 201 Created : objeto restaurante criado
-- 409 Conflict: Unique field already exists (duplicidade de campo único no Prisma)
-- 400 Bad Request: falha de validação Zod
-- 500 Internal Server Error : erro inesperado
+**Nota (Windows / PowerShell):** use `curl.exe` para evitar o alias `Invoke-WebRequest`.
 
 ---
 
-## 2) Listar restaurantes
+## `GET /restaurants`
 
-- Método: GET
-- URL: /restaurants
-- Validação: getRestaurantsQuerySchema (query)
+Lista restaurantes com **paginacao**.
 
-### Query params
-- page (número inteiro, >= 1, padrão 1)
-- pageSize (número inteiro, 1 <= valor <= 100, padrão 20)
+### Query string (opcional)
 
-### Exemplo
-GET /restaurants?page=1&pageSize=20
+| Parametro | Tipo | Padrao | Regras |
+|-----------|------|--------|--------|
+| `page` | numero | `1` | inteiro >= 1 |
+| `pageSize` | numero | `20` | inteiro entre 1 e 100 |
 
-### Respostas
-- 200 OK : array de restaurantes
-- 400 Bad Request : falha de validação Zod
-- 500 Internal Server Error : erro inesperado
+### Resposta `200`
 
----
-
-## 3) Obter restaurante por ID
-
-- Método: GET
-- URL: /restaurants/:id
-- Validação: estaurantIdParamSchema (params)
-
-### Parâmetros de rota
-- id (número inteiro positivo)
-
-### Exemplo
-GET /restaurants/3
-
-### Respostas
-- 200 OK : objeto restaurante
-- 404 Not Found: restaurante não encontrado
-- 400 Bad Request: ID inválido
-- 500 Internal Server Error : erro inesperado
-
----
-
-## 4) Atualizar restaurante
-
-- Método: PUT
-- URL: /restaurants/:id
-- Validação:
-  - estaurantIdParamSchema (params)
-  - updateRestaurantSchema (body)
-
-### Parâmetros de rota
-- id (número inteiro positivo)
-
-### Corpo (JSON) de exemplo
-`json
+```json
 {
-  name: Pizzaria do Bairro - Renovada,
-  managerId: 7
+  "data": [
+    {
+      "id": 1,
+      "name": "Pizzaria do Bairro",
+      "managerId": 5,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 1,
+    "totalPages": 1
+  }
 }
-`
+```
 
-### Campos
-- 
-ame (string, mínimo 2, opcional)
-- managerId (número inteiro positivo, opcional)
-- Deve conter ao menos um campo (refine Zod)
+Com **nenhum** restaurante no banco, `total` e `totalPages` vêm `0` (lista vazia em `data`).
 
-### Respostas
-- 200 OK : objeto restaurante atualizado
-- 404 Not Found: não existe restaurante com ID informado
-- 409 Conflict: campo único duplicado
-- 400 Bad Request: falha de validação Zod
-- 500 Internal Server Error : erro inesperado
+### cURL
 
----
+```bash
+curl.exe -s "http://localhost:3000/restaurants"
+curl.exe -s "http://localhost:3000/restaurants?page=1&pageSize=10"
+```
 
-## 5) Excluir restaurante
+### Exemplo de erro de validacao
 
-- Método: DELETE
-- URL: /restaurants/:id
-- Validação: estaurantIdParamSchema (params)
-
-### Parâmetros de rota
-- id (número inteiro positivo)
-
-### Exemplo
-DELETE /restaurants/3
-
-### Respostas
-- 204 No Content: exclusão realizada
-- 404 Not Found: restaurante não encontrado
-- 400 Bad Request: ID inválido
-- 500 Internal Server Error: erro inesperado
+```bash
+curl.exe -s "http://localhost:3000/restaurants?page=0"
+```
 
 ---
 
-## Observações de validação
-- alidateRequest(schema, source) converte e valida dados via Zod
-- Erros de validação retornam 400 com detalhes das mensagens de cada campo
-- createRestaurantSchema, updateRestaurantSchema, estaurantIdParamSchema, getRestaurantsQuerySchema estão em src/validation/restaurant-validation.ts
+## `GET /restaurants/:id`
 
+Busca um restaurante por **id**.
+
+### Parametros de rota
+
+| Parametro | Tipo | Regras |
+|-----------|------|--------|
+| `id` | numero | inteiro positivo |
+
+### Resposta `200`
+
+Objeto restaurante.
+
+### Resposta `404`
+
+```json
+{ "message": "Restaurante nao encontrado." }
+```
+
+### cURL
+
+```bash
+curl.exe -s "http://localhost:3000/restaurants/1"
+```
+
+---
+
+## `POST /restaurants`
+
+Cria um restaurante.
+
+### Body (JSON)
+
+| Campo | Tipo | Obrigatorio | Regras |
+|-------|------|-------------|--------|
+| `name` | string | sim | minimo 2 caracteres |
+| `managerId` | numero | sim | inteiro positivo |
+
+### Resposta `201`
+
+Objeto restaurante criado.
+
+### Resposta `409`
+
+```json
+{ "message": "Campo unico ja existe." }
+```
+
+### cURL
+
+Arquivo `body-create-restaurant.json`:
+
+```json
+{
+  "name": "Pizzaria do Bairro",
+  "managerId": 5
+}
+```
+
+```bash
+curl.exe -s -X POST "http://localhost:3000/restaurants" ^
+  -H "Content-Type: application/json" ^
+  -d "@body-create-restaurant.json"
+```
+
+---
+
+## `PUT /restaurants/:id`
+
+Atualiza restaurante. **Pelo menos um** campo no body.
+
+### Parametros de rota
+
+| Parametro | Tipo | Regras |
+|-----------|------|--------|
+| `id` | numero | inteiro positivo |
+
+### Body (JSON)
+
+Todos opcionais, mas nao pode ser `{}` (o Zod rejeita com **400**; a mensagem costuma vir em `formErrors`, por exemplo: `Informe ao menos um campo para atualizar`).
+
+| Campo | Tipo | Regras |
+|-------|------|--------|
+| `name` | string | minimo 2 caracteres |
+| `managerId` | numero | inteiro positivo |
+
+### Resposta `200`
+
+Objeto restaurante atualizado.
+
+### Respostas `404` e `409`
+
+```json
+{ "message": "Restaurante nao encontrado." }
+```
+
+```json
+{ "message": "Campo unico ja existe." }
+```
+
+### cURL
+
+Arquivo `body-update-restaurant.json`:
+
+```json
+{
+  "name": "Pizzaria do Bairro - Renovada"
+}
+```
+
+```bash
+curl.exe -s -X PUT "http://localhost:3000/restaurants/1" ^
+  -H "Content-Type: application/json" ^
+  -d "@body-update-restaurant.json"
+```
+
+---
+
+## `DELETE /restaurants/:id`
+
+Remove restaurante.
+
+### Parametros de rota
+
+| Parametro | Tipo | Regras |
+|-----------|------|--------|
+| `id` | numero | inteiro positivo |
+
+### Resposta `200`
+
+Objeto do restaurante removido.
+
+### Resposta `404`
+
+```json
+{ "message": "Restaurante nao encontrado." }
+```
+
+### cURL
+
+```bash
+curl.exe -s -X DELETE "http://localhost:3000/restaurants/1"
+```
+
+---
+
+## Observacoes para o front
+
+- O backend valida body, query e params com `validateRequest(...)` + Zod.
+- `managerId` deve ser enviado como numero inteiro positivo e **existir** na tabela `users` (crie o usuario antes, ex.: `POST /users`). Se nao existir, o Prisma falha na FK e a API responde **500** com mensagem generica (`Erro ao criar restaurante.` / `Erro ao atualizar restaurante.`), nao 404.
+- A listagem retorna `{ data, meta }`, nao um array puro.
+- Erros 500 retornam mensagens genericas em portugues, sem expor detalhes internos do Prisma.

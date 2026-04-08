@@ -1,3 +1,6 @@
+-- CreateSchema
+-- Schema unico: banco vazio ou apos reset. Quem tiver schema legado deve dropar o DB e rodar migrate deploy de novo.
+
 -- CreateEnum
 CREATE TYPE "Status" AS ENUM ('PENDING', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED');
 
