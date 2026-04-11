@@ -90,6 +90,29 @@ pedido_itens (
  Entidades: Pedido (Order), Item do Pedido (OrderItem), Cliente (Customer Snapshot).
  Responsabilidades: Cálculo do total, fluxo de status do pedido (PENDENTE -> ENTREGUE), registro do endereço de entrega no momento da compra.
 
+## API em microservicos (recomendado)
+
+Agora os servicos ficam dentro de `backend/`.
+
+1. Instale [Docker Desktop](https://www.docker.com/products/docker-desktop/) e deixe-o em execucao.
+2. Rode:
+
+```bash
+cd backend
+docker compose up --build
+```
+
+- **Gateway:** [http://localhost:3000](http://localhost:3000) — mesmos endpoints que antes (`GET /test`, `/users`, `/restaurants`).
+- **Bancos:** PostgreSQL em `localhost:5434` (`db_users`) e `localhost:5435` (`db_restaurants`).
+
+Desenvolvimento **sem** Docker: em tres terminais, com dois Postgres (ou as portas dos `.env.example` de cada servico), na ordem:
+
+1. `cd backend/user-service && cp .env.example .env` (ajuste `DATABASE_URL`), `npx prisma migrate dev`, `npm run dev`
+2. `cd backend/restaurant-service && cp .env.example .env` (ajuste `DATABASE_URL` e `USER_SERVICE_URL`), `npx prisma migrate dev`, `npm run dev`
+3. `cd backend/api-gateway && cp .env.example .env`, `npm run dev`
+
+Detalhes adicionais: [backend/README.md](backend/README.md).
+
 ## Estrutura de pastas(Cean architecture)
 Exemplo:
 
