@@ -27,12 +27,3 @@ Em tres terminais, na ordem:
 1. `cd user-service && cp .env.example .env`, ajustar `DATABASE_URL`, depois `npx prisma migrate dev` e `npm run dev`
 2. `cd restaurant-service && cp .env.example .env`, ajustar `DATABASE_URL` e `USER_SERVICE_URL`, depois `npx prisma migrate dev` e `npm run dev`
 3. `cd api-gateway && cp .env.example .env`, depois `npm run dev`
-
-## Monolito legado (referencia)
-
-O codigo legado do monolito Express + Prisma segue no mesmo diretorio para referencia/comparacao.
-Se precisar subir apenas o Postgres antigo (porta **5433**), use:
-
-```bash
-docker compose -f docker-compose.monolith.yml up
-```
