@@ -1,7 +1,7 @@
 # API de usuários (`/users`)
 
-Base URL local (padrão): `http://localhost:3000`  
-Ajuste host/porta conforme `PORT` no `.env`.
+Base URL local (padrão): `http://localhost:3000` (via **api-gateway** com `docker compose` na raiz do repositório).  
+O **user-service** isolado usa tipicamente a porta `3001`. Ajuste host/porta conforme `.env`.
 
 **Headers comuns**
 

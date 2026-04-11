@@ -1,7 +1,7 @@
 # API de restaurantes (`/restaurants`)
 
-Base URL local (padrao): `http://localhost:3000`  
-Ajuste host/porta conforme `PORT` no `.env`.
+Base URL local (padrao): `http://localhost:3000` (via **api-gateway** com `docker compose` na raiz do repo).  
+O **restaurant-service** sozinho usa tipicamente a porta `3002`. Ajuste host/porta conforme `.env`.
 
 **Headers comuns**
 
