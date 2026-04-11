@@ -1,22 +1,78 @@
 services:
-  postgres:
+  db-users:
     image: postgres:16-alpine
-    container_name: jeofton-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: jeofton
+      POSTGRES_DB: db_users
     ports:
-      # 5433 no host evita conflito com PostgreSQL instalado na máquina (porta 5432)
-      - "5433:5432"
+      - "5434:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - jeofton_db_users:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d jeofton"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_users']
       interval: 5s
       timeout: 5s
       retries: 5
 
+  db-restaurants:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db_restaurants
+    ports:
+      - "5435:5432"
+    volumes:
+      - jeofton_db_restaurants:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_restaurants']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build: ./user-service
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db-users:5432/db_users
+      PORT: '3001'
+    depends_on:
+      db-users:
+        condition: service_healthy
+
+  restaurant-service:
+    build: ./restaurant-service
+    restart: unless-stopped
+    ports:
+      - '3002:3002'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db-restaurants:5432/db_restaurants
+      PORT: '3002'
+      USER_SERVICE_URL: http://user-service:3001
+    depends_on:
+      db-restaurants:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+
+  api-gateway:
+    build: ./api-gateway
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: '3000'
+      USER_SERVICE_URL: http://user-service:3001
+      RESTAURANT_SERVICE_URL: http://restaurant-service:3002
+    depends_on:
+      - user-service
+      - restaurant-service
+
 volumes:
-  postgres_data:
+  jeofton_db_users:
+  jeofton_db_restaurants:
