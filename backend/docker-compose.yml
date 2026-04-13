@@ -33,6 +33,23 @@ services:
       timeout: 5s
       retries: 5
 
+  db-orders:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db_orders
+    ports:
+      - "5436:5432"
+    volumes:
+      - jeofton_db_orders:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_orders']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   user-service:
     build: ./user-service
     restart: unless-stopped
@@ -60,6 +77,24 @@ services:
       user-service:
         condition: service_started
 
+  order-service:
+    build: ./order-service
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db-orders:5432/db_orders
+      PORT: '3003'
+      USER_SERVICE_URL: http://user-service:3001
+      RESTAURANT_SERVICE_URL: http://restaurant-service:3002
+    depends_on:
+      db-orders:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      restaurant-service:
+        condition: service_started
+
   api-gateway:
     build: ./api-gateway
     restart: unless-stopped
@@ -69,10 +104,13 @@ services:
       PORT: '3000'
       USER_SERVICE_URL: http://user-service:3001
       RESTAURANT_SERVICE_URL: http://restaurant-service:3002
+      ORDER_SERVICE_URL: http://order-service:3003
     depends_on:
       - user-service
       - restaurant-service
+      - order-service
 
 volumes:
   jeofton_db_users:
   jeofton_db_restaurants:
+  jeofton_db_orders:

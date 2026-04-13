@@ -5,6 +5,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 const PORT = Number(process.env.PORT ?? 3000);
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL ?? 'http://127.0.0.1:3001';
 const RESTAURANT_SERVICE_URL = process.env.RESTAURANT_SERVICE_URL ?? 'http://127.0.0.1:3002';
+const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL ?? 'http://127.0.0.1:3003';
 
 const app = express();
 
@@ -14,9 +15,16 @@ app.get('/test', (_req, res) => {
 
 app.use(
   '/users',
-  createProxyMiddleware({ //middleware nativo do ts que pega a requisição e repassa pra outro servidor
+  createProxyMiddleware({
     target: USER_SERVICE_URL,
-    changeOrigin: true, //parametro que muda a origem do host atual para o targeted host 
+    changeOrigin: true,
+    pathRewrite: (path) => {
+      if (path === '/users' || path.startsWith('/users/')) {
+        const rest = path.replace(/^\/users/, '');
+        return rest.length > 0 ? rest : '/';
+      }
+      return path;
+    },
   })
 );
 
@@ -25,6 +33,30 @@ app.use(
   createProxyMiddleware({
     target: RESTAURANT_SERVICE_URL,
     changeOrigin: true,
+    pathRewrite: (path) => {
+      if (path === '/restaurants' || path.startsWith('/restaurants/')) {
+        const rest = path.replace(/^\/restaurants/, '');
+        return rest.length > 0 ? rest : '/';
+      }
+      return path;
+    },
+  })
+);
+
+app.use(
+  '/orders',
+  createProxyMiddleware({
+    target: ORDER_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: (path) => {
+      if (path === '' || path === '/') {
+        return '/orders';
+      }
+      if (path.startsWith('/')) {
+        return `/orders${path}`;
+      }
+      return `/orders/${path}`;
+    },
   })
 );
 
