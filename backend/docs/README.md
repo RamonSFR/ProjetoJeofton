@@ -10,6 +10,7 @@ Esta pasta concentra a documentação dos **microsserviços** e do **API Gateway
 | [user-service.md](./user-service.md) | Usuários: modelo de dados, variáveis de ambiente, health check e API REST. |
 | [restaurant-service.md](./restaurant-service.md) | Restaurantes e produtos (cardápio): modelo, integração com usuários e API REST. |
 | [order-service.md](./order-service.md) | Pedidos: modelo, status, integrações e API REST. |
+| [testing.md](./testing.md) | Testes automatizados (Jest), comandos e testes manuais sugeridos. |
 
 ## Referência legada
 
