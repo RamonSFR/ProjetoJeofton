@@ -40,3 +40,39 @@ model OrderItem {
 
   @@map("order_items")
 }
+
+model OrderRead {
+  orderId                 Int             @id @map("order_id")
+  restaurantId            Int             @map("restaurant_id")
+  customerId              Int             @map("customer_id")
+  customerName            String          @map("customer_name")
+  customerEmail           String          @map("customer_email")
+  totalAmount             Decimal         @map("total_amount") @db.Decimal(10, 2)
+  status                  OrderStatus
+  deliveryAddressSnapshot String?         @map("delivery_address_snapshot")
+  createdAt               DateTime        @map("created_at")
+  updatedAt               DateTime        @map("updated_at")
+  items                   OrderItemRead[]
+
+  @@map("orders_read")
+}
+
+model OrderItemRead {
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @map("order_id")
+  productId   Int      @map("product_id")
+  productName String   @map("product_name")
+  quantity    Int
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
+  order       OrderRead @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_items_read")
+}
+
+model ProcessedEvent {
+  eventId     String   @id @map("event_id")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("processed_events")
+}

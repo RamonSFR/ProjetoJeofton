@@ -116,6 +116,12 @@ Desenvolvimento **sem** Docker: em cinco terminais, com RabbitMQ e tres Postgres
 
 Detalhes adicionais: [backend/README.md](backend/README.md).
 
+## CQRS e consistencia eventual (pedidos)
+
+No `order-service`, os endpoints de escrita (commands) continuam no write model de pedidos.
+As leituras (`GET /orders` e `GET /orders/:id`) usam um read model denormalizado atualizado de forma eventual a partir do evento `PedidoCriadoEvent` via RabbitMQ.
+A projecao e idempotente, controlada por `processed_events` com unicidade de `event_id`.
+
 ## Estrutura de pastas(Cean architecture)
 Exemplo:
 

@@ -32,6 +32,16 @@ O `notification-service` consome esse evento na fila `GestaoPedidos.Notificacoes
 
 `[E-MAIL SIMULADO] Para: <email> | Pedido: <id> | Total: R$ <valor>`
 
+No `order-service`, o mesmo evento tambem e consumido por um **projetor de read model** na fila `GestaoPedidos.OrderService:PedidoCriadoProjection`.
+Esse projetor aplica **consistencia eventual** para consultas de `GET /orders` e `GET /orders/:id`, populando as tabelas `orders_read` e `order_items_read`.
+A idempotencia da projecao e garantida pela tabela `processed_events` (chave unica `event_id`): evento repetido e apenas reconhecido (`ack`) sem reprojecao.
+
+## CQRS no order-service
+
+- **Commands (write model):** `POST /orders`, `PATCH /orders/:id/status`, `DELETE /orders/:id` continuam operando no modelo transacional `orders/order_items`.
+- **Queries (read model):** `GET /orders` e `GET /orders/:id` leem do modelo denormalizado `orders_read/order_items_read`.
+- A listagem usa paginacao nativa PostgreSQL com `LIMIT/OFFSET`.
+
 ## Checkpoint de validacao (ordem sugerida)
 
 1. Verificar stack e saude dos containers:

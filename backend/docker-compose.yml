@@ -121,7 +121,6 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
-<<<<<<< HEAD
 
   notification-service:
     build: ./notification-service
@@ -134,8 +133,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-=======
->>>>>>> f4042cee96638ceb5bcd397db0cbdd9a592a0163
 
   api-gateway:
     build: ./api-gateway

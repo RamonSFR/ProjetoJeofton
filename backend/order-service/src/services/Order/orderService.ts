@@ -109,10 +109,12 @@ export const createOrder = async (input: {
   const eventPayload: OrderCreatedEvent = {
     eventId: randomUUID(),
     orderId: order.id,
+    restaurantId: order.restaurantId,
     customerId: customer.id,
     customerName: customer.name,
     customerEmail: customer.email,
     totalAmount: order.total.toString(),
+    deliveryAddressSnapshot: order.deliveryAddressSnapshot,
     createdAt: order.createdAt.toISOString(),
     items: order.items.map((item) => ({
       productId: item.productId,

@@ -40,10 +40,12 @@ describe('publishOrderCreatedEvent integration', () => {
     const payload: OrderCreatedEvent = {
       eventId: expectedEventId,
       orderId: 123,
+      restaurantId: 222,
       customerId: 321,
       customerName: 'Teste',
       customerEmail: 'teste@exemplo.com',
       totalAmount: '100.00',
+      deliveryAddressSnapshot: 'Rua Teste, 10',
       createdAt: new Date().toISOString(),
       items: [],
     };

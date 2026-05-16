@@ -8,10 +8,12 @@ export type OrderCreatedEventItem = {
 export type OrderCreatedEvent = {
   readonly eventId: string;
   readonly orderId: number;
+  readonly restaurantId: number;
   readonly customerId: number;
   readonly customerName: string;
   readonly customerEmail: string;
   readonly totalAmount: string;
+  readonly deliveryAddressSnapshot: string | null;
   readonly createdAt: string;
   readonly items: readonly OrderCreatedEventItem[];
 };

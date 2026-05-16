@@ -25,6 +25,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^11.7.2",
     "@testcontainers/rabbitmq": "^11.14.0",
     "@types/amqplib": "^0.10.8",
     "@types/express": "^5.0.6",

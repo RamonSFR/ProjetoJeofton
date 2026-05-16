@@ -12,9 +12,17 @@ jest.mock('./database/prisma', () => ({
     },
   },
 }));
+jest.mock('./read-model/order-read-repository', () => ({
+  getOrderReadById: jest.fn(),
+  getOrderReadsPaginated: jest.fn(),
+}));
 
 import app from './app';
 import { prisma } from './database/prisma';
+import {
+  getOrderReadById,
+  getOrderReadsPaginated,
+} from './read-model/order-read-repository';
 
 describe('order-service HTTP (prisma mocked)', () => {
   beforeEach(() => {
@@ -31,7 +39,10 @@ describe('order-service HTTP (prisma mocked)', () => {
 
   describe('GET /orders', () => {
     it('returns paginated result when transaction resolves', async () => {
-      (prisma.$transaction as jest.Mock).mockResolvedValue([[], 0]);
+      (getOrderReadsPaginated as jest.Mock).mockResolvedValue({
+        data: [],
+        meta: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
+      });
       const response = await request(app).get('/orders').query({ page: 1, pageSize: 10 });
       expect(response.status).toBe(200);
       expect(response.body.data).toEqual([]);
@@ -46,7 +57,7 @@ describe('order-service HTTP (prisma mocked)', () => {
 
   describe('GET /orders/:id', () => {
     it('returns 404 when order is missing', async () => {
-      (prisma.order.findUnique as jest.Mock).mockResolvedValue(null);
+      (getOrderReadById as jest.Mock).mockResolvedValue(null);
       const response = await request(app).get('/orders/999');
       expect(response.status).toBe(404);
       expect(response.body.message).toBeDefined();

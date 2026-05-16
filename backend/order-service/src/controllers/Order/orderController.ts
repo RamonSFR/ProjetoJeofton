@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { RestaurantNotFoundError } from '../../services/restaurant-service-client';
 import * as orderService from '../../services/Order/orderService';
 import { CustomerNotFoundError } from '../../services/user-service-client';
+import * as orderQueryService from '../../query/order-query-service';
 import type {
   CreateOrderBody,
   GetOrdersQuery,
@@ -39,7 +40,8 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 export const getOrderById = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.validatedParams as OrderIdParam;
   try {
-    const order = await orderService.getById(id);
+    // Query: leitura no read model denormalizado.
+    const order = await orderQueryService.findOrderReadById(id);
     if (!order) {
       res.status(404).json({ message: 'Pedido nao encontrado.' });
       return;
@@ -53,7 +55,8 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   const query = req.validatedQuery as GetOrdersQuery;
   try {
-    const result = await orderService.getPaginated({
+    // Query: listagem paginada via read model com LIMIT/OFFSET.
+    const result = await orderQueryService.listOrderReadsPaginated({
       page: query.page,
       pageSize: query.pageSize,
       customerId: query.customerId,

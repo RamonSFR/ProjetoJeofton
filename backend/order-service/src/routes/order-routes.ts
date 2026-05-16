@@ -16,10 +16,8 @@ import {
 
 const router = Router();
 
+// Commands (write model)
 router.post('/', validateRequest(createOrderBodySchema, 'body'), createOrder);
-
-router.get('/', validateRequest(getOrdersQuerySchema, 'query'), getOrders);
-
 router.patch(
   '/:id/status',
   validateRequest(orderIdParamSchema, 'params'),
@@ -29,6 +27,8 @@ router.patch(
 
 router.delete('/:id', validateRequest(orderIdParamSchema, 'params'), deleteOrder);
 
+// Queries (read model)
+router.get('/', validateRequest(getOrdersQuerySchema, 'query'), getOrders);
 router.get('/:id', validateRequest(orderIdParamSchema, 'params'), getOrderById);
 
 export default router;
