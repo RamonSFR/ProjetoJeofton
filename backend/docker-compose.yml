@@ -29,7 +29,7 @@ services:
     volumes:
       - jeofton_db_users:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_users']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db_users"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -46,7 +46,7 @@ services:
     volumes:
       - jeofton_db_restaurants:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_restaurants']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db_restaurants"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -63,7 +63,7 @@ services:
     volumes:
       - jeofton_db_orders:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_orders']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db_orders"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -72,11 +72,11 @@ services:
     build: ./user-service
     restart: unless-stopped
     ports:
-      - '3001:3001'
+      - "3001:3001"
     environment:
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
       DATABASE_URL: postgresql://postgres:postgres@db-users:5432/db_users
-      PORT: '3001'
+      PORT: "3001"
     depends_on:
       db-users:
         condition: service_healthy
@@ -87,10 +87,10 @@ services:
     build: ./restaurant-service
     restart: unless-stopped
     ports:
-      - '3002:3002'
+      - "3002:3002"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db-restaurants:5432/db_restaurants
-      PORT: '3002'
+      PORT: "3002"
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
       USER_SERVICE_URL: http://user-service:3001
     depends_on:
@@ -105,10 +105,10 @@ services:
     build: ./order-service
     restart: unless-stopped
     ports:
-      - '3003:3003'
+      - "3003:3003"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db-orders:5432/db_orders
-      PORT: '3003'
+      PORT: "3003"
       USER_SERVICE_URL: http://user-service:3001
       RESTAURANT_SERVICE_URL: http://restaurant-service:3002
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
@@ -126,9 +126,9 @@ services:
     build: ./notification-service
     restart: unless-stopped
     ports:
-      - '3004:3004'
+      - "3004:3004"
     environment:
-      PORT: '3004'
+      PORT: "3004"
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
     depends_on:
       rabbitmq:
@@ -138,20 +138,34 @@ services:
     build: ./api-gateway
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
-      PORT: '3000'
+      PORT: "3000"
       USER_SERVICE_URL: http://user-service:3001
       RESTAURANT_SERVICE_URL: http://restaurant-service:3002
       ORDER_SERVICE_URL: http://order-service:3003
+      REALTIME_SERVICE_URL: http://realtime-service:3006
     depends_on:
       - user-service
       - restaurant-service
       - order-service
-      - notification-service
+      - realtime-service
+
+  realtime-service:
+    build: ./realtime-service
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: "3006"
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      NODE_ENV: production
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
+  jeofton_rabbitmq:
   jeofton_db_users:
   jeofton_db_restaurants:
   jeofton_db_orders:
-  jeofton_rabbitmq:

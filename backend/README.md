@@ -8,6 +8,7 @@ Este diretorio concentra todo o backend da aplicacao:
 - `notification-service` — consumer RabbitMQ para notificacoes de pedido
 - `api-gateway` — porta **3000**, expoe `/users`, `/restaurants`, `/orders` e `/test`
 - `rabbitmq` — broker AMQP + Management UI
+- `realtime-service` — WebSocket para eventos em tempo real (Socket.io)
 
 ## Subir os microservicos (recomendado)
 
@@ -24,6 +25,8 @@ Endpoints publicos:
 - `http://localhost:3000/restaurants`
 - `http://localhost:3000/orders`
 - RabbitMQ Management UI: `http://localhost:15672` (admin/admin)
+- Realtime Service: `http://localhost:3006` (WebSocket)
+- Realtime Info: `http://localhost:3000/realtime/info`
 
 ## Fluxo de mensageria
 
