@@ -2,7 +2,7 @@
 module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/*.test.ts'],
+  testMatch: ['**/*.test.ts', '**/*.integration.test.ts'],
   preset: 'ts-jest',
   clearMocks: true,
   restoreMocks: true,

@@ -6,7 +6,10 @@ import {
   assertRestaurantExists,
   fetchProductsForRestaurant,
 } from '../restaurant-service-client';
-import { assertCustomerExists } from '../user-service-client';
+import { randomUUID } from 'node:crypto';
+import type { OrderCreatedEvent } from '../../messaging/order-created-event';
+import { publishOrderCreatedEvent } from '../../messaging/publish-order-created-event';
+import { assertCustomerExists, fetchCustomerSnapshot } from '../user-service-client';
 
 export class OrderNotFoundError extends Error {
   readonly name = 'OrderNotFoundError';
@@ -53,6 +56,7 @@ export const createOrder = async (input: {
 }): Promise<OrderWithItems> => {
   const { restaurantId, customerId, items, deliveryAddressSnapshot } = input;
   await assertCustomerExists(customerId);
+  const customer = await fetchCustomerSnapshot(customerId);
   await assertRestaurantExists(restaurantId);
   const merged = mergeQuantitiesByProduct(items);
   const productIds = [...merged.keys()];
@@ -81,7 +85,7 @@ export const createOrder = async (input: {
       unitPrice: product.price,
     });
   }
-  return prisma.$transaction(async (tx) => {
+  const order = await prisma.$transaction(async (tx) => {
     const order = await tx.order.create({
       data: {
         restaurantId,
@@ -102,6 +106,23 @@ export const createOrder = async (input: {
     });
     return order;
   });
+  const eventPayload: OrderCreatedEvent = {
+    eventId: randomUUID(),
+    orderId: order.id,
+    customerId: customer.id,
+    customerName: customer.name,
+    customerEmail: customer.email,
+    totalAmount: order.total.toString(),
+    createdAt: order.createdAt.toISOString(),
+    items: order.items.map((item) => ({
+      productId: item.productId,
+      productName: item.productNameSnapshot,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toString(),
+    })),
+  };
+  await publishOrderCreatedEvent(eventPayload);
+  return order;
 };
 
 export const getById = async (orderId: number): Promise<OrderWithItems | null> => {

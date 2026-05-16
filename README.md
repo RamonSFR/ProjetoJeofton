@@ -102,14 +102,17 @@ cd backend
 docker compose up --build
 ```
 
-- **Gateway:** [http://localhost:3000](http://localhost:3000) — mesmos endpoints que antes (`GET /test`, `/users`, `/restaurants`).
-- **Bancos:** PostgreSQL em `localhost:5434` (`db_users`) e `localhost:5435` (`db_restaurants`).
+- **Gateway:** [http://localhost:3000](http://localhost:3000) — endpoints `GET /test`, `/users`, `/restaurants`, `/orders`.
+- **RabbitMQ Management UI:** [http://localhost:15672](http://localhost:15672) (usuario/senha `admin/admin`).
+- **Bancos:** PostgreSQL em `localhost:5434` (`db_users`), `localhost:5435` (`db_restaurants`) e `localhost:5436` (`db_orders`).
 
-Desenvolvimento **sem** Docker: em tres terminais, com dois Postgres (ou as portas dos `.env.example` de cada servico), na ordem:
+Desenvolvimento **sem** Docker: em cinco terminais, com RabbitMQ e tres Postgres (ou as portas dos `.env.example` de cada servico), na ordem:
 
 1. `cd backend/user-service && cp .env.example .env` (ajuste `DATABASE_URL`), `npx prisma migrate dev`, `npm run dev`
 2. `cd backend/restaurant-service && cp .env.example .env` (ajuste `DATABASE_URL` e `USER_SERVICE_URL`), `npx prisma migrate dev`, `npm run dev`
-3. `cd backend/api-gateway && cp .env.example .env`, `npm run dev`
+3. `cd backend/order-service && cp .env.example .env` (ajuste `DATABASE_URL`, `USER_SERVICE_URL`, `RESTAURANT_SERVICE_URL`, `RABBITMQ_URL`), `npx prisma migrate dev`, `npm run dev`
+4. `cd backend/notification-service && cp .env.example .env` (ajuste `RABBITMQ_URL`), `npm install`, `npm run dev`
+5. `cd backend/api-gateway && cp .env.example .env`, `npm run dev`
 
 Detalhes adicionais: [backend/README.md](backend/README.md).
 
