@@ -1,4 +1,22 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - jeofton_rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
   db-users:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -56,10 +74,13 @@ services:
     ports:
       - '3001:3001'
     environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
       DATABASE_URL: postgresql://postgres:postgres@db-users:5432/db_users
       PORT: '3001'
     depends_on:
       db-users:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   restaurant-service:
@@ -70,12 +91,15 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db-restaurants:5432/db_restaurants
       PORT: '3002'
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
       USER_SERVICE_URL: http://user-service:3001
     depends_on:
       db-restaurants:
         condition: service_healthy
       user-service:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   order-service:
     build: ./order-service
@@ -87,6 +111,7 @@ services:
       PORT: '3003'
       USER_SERVICE_URL: http://user-service:3001
       RESTAURANT_SERVICE_URL: http://restaurant-service:3002
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
     depends_on:
       db-orders:
         condition: service_healthy
@@ -94,6 +119,8 @@ services:
         condition: service_started
       restaurant-service:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   api-gateway:
     build: ./api-gateway
@@ -114,3 +141,4 @@ volumes:
   jeofton_db_users:
   jeofton_db_restaurants:
   jeofton_db_orders:
+  jeofton_rabbitmq:
