@@ -8,6 +8,8 @@ Este diretorio concentra todo o backend da aplicacao:
 - `notification-service` — consumer RabbitMQ para notificacoes de pedido
 - `api-gateway` — porta **3000**, expoe `/users`, `/restaurants`, `/orders` e `/test`
 - `rabbitmq` — broker AMQP + Management UI
+- `redis` — cache distribuido para catalogo e queries frequentes
+- `redisinsight` — interface visual para inspecionar chaves e uso do Redis
 - `realtime-service` — WebSocket para eventos em tempo real (Socket.io)
 
 ## Subir os microservicos (recomendado)
@@ -25,6 +27,7 @@ Endpoints publicos:
 - `http://localhost:3000/restaurants`
 - `http://localhost:3000/orders`
 - RabbitMQ Management UI: `http://localhost:15672` (admin/admin)
+- Redis Insight: `http://localhost:5540`
 - Realtime Service: `http://localhost:3006` (WebSocket)
 - Realtime Info: `http://localhost:3000/realtime/info`
 
@@ -44,6 +47,15 @@ A idempotencia da projecao e garantida pela tabela `processed_events` (chave uni
 - **Commands (write model):** `POST /orders`, `PATCH /orders/:id/status`, `DELETE /orders/:id` continuam operando no modelo transacional `orders/order_items`.
 - **Queries (read model):** `GET /orders` e `GET /orders/:id` leem do modelo denormalizado `orders_read/order_items_read`.
 - A listagem usa paginacao nativa PostgreSQL com `LIMIT/OFFSET`.
+- As queries tambem usam **cache distribuido no Redis** com TTL curto para reduzir latencia sem esconder a consistencia eventual do read model.
+
+## Cache distribuido com Redis
+
+- `restaurant-service` aplica **Cache-Aside** em `GET /:restaurantId/products` e `GET /:restaurantId/products/:productId`.
+- `POST`, `PUT` e `DELETE` de produto invalidam o cache do item e das listagens do restaurante apos a escrita no banco.
+- `order-service` aplica cache distribuido em `GET /orders` e `GET /orders/:id`.
+- O cache de pedidos e invalidado quando o projetor do CQRS grava no read model e tambem apos mudancas de status.
+- As rotas de leitura ainda enviam `Cache-Control` para permitir cache HTTP curto em navegador/proxy.
 
 ## Checkpoint de validacao (ordem sugerida)
 
@@ -82,6 +94,19 @@ Esperado: `messages_ready = 0` e `messages_unacknowledged = 0`.
 cd order-service
 npm run test:integration
 ```
+
+6. Monitorar o Redis em tempo real:
+
+```bash
+docker compose exec redis redis-cli -a redissenha123 MONITOR
+```
+
+Esperado:
+
+- `GET ProjetoJeofton:restaurant-service:product:*` na primeira e segunda leitura de produtos
+- `SET ... EX 300` ou `EX 120` apos cache MISS no catalogo
+- `GET ProjetoJeofton:order-service:order-read:*` nas consultas do read model
+- `DEL ...` quando houver invalidacao apos escrita/projecao
 
 ## Executar sem Docker
 

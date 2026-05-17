@@ -7,10 +7,16 @@ import {
 } from '../read-model/processed-events-repository';
 import { saveOrderProjection } from '../read-model/order-read-repository';
 import { withReadModelTransaction } from '../read-model/read-model-db';
+import { invalidateOrderQueryCache } from '../cache/order-query-cache-service';
 
 const ORDER_PROJECTOR_QUEUE_NAME = 'GestaoPedidos.OrderService:PedidoCriadoProjection';
 const ORDER_CREATED_ROUTING_KEY = '';
-const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://admin:admin@127.0.0.1:5672';
+let projectorConnection: ChannelModel | null = null;
+let projectorChannel: Channel | null = null;
+
+const getRabbitMqUrl = (): string => {
+  return process.env.RABBITMQ_URL ?? 'amqp://admin:admin@127.0.0.1:5672';
+};
 
 const parseEventMessage = (message: ConsumeMessage): OrderCreatedEvent => {
   return JSON.parse(message.content.toString('utf-8')) as OrderCreatedEvent;
@@ -65,6 +71,8 @@ const executeConsume = async (
           console.warn(
             `[order-projector] Evento ${payload.eventId} ja foi processado. Ack sem reprojecao.`
           );
+        } else {
+          await invalidateOrderQueryCache(payload.orderId);
         }
         channel.ack(message);
       } catch (error: unknown) {
@@ -77,9 +85,41 @@ const executeConsume = async (
 };
 
 export const startOrderCreatedProjector = async (): Promise<void> => {
-  const connection: ChannelModel = await amqp.connect(RABBITMQ_URL);
+  if (projectorConnection && projectorChannel) {
+    return;
+  }
+  const connection: ChannelModel = await amqp.connect(getRabbitMqUrl());
+  connection.on('close', () => {
+    projectorConnection = null;
+    projectorChannel = null;
+  });
+  connection.on('error', () => {
+    projectorConnection = null;
+    projectorChannel = null;
+  });
   const channel: Channel = await connection.createChannel();
   const processedEventsRepository: IProcessedEventsRepository = new ProcessedEventsRepository();
   await setupProjectionBindings(channel);
   await executeConsume(channel, processedEventsRepository);
+  projectorConnection = connection;
+  projectorChannel = channel;
+};
+
+export const closeOrderCreatedProjector = async (): Promise<void> => {
+  if (projectorChannel) {
+    try {
+      await projectorChannel.close();
+    } catch {
+      // Ignore close errors during shutdown.
+    }
+  }
+  if (projectorConnection) {
+    try {
+      await projectorConnection.close();
+    } catch {
+      // Ignore close errors during shutdown.
+    }
+  }
+  projectorChannel = null;
+  projectorConnection = null;
 };

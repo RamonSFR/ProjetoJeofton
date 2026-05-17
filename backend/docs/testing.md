@@ -7,8 +7,10 @@ Este documento descreve **como rodar** os testes, **o que está coberto** e **co
 | Serviço | Tipo | Ferramenta | Comando |
 |---------|------|------------|---------|
 | `order-service` | Unitário + integração HTTP (Prisma mockado) | Jest + ts-jest + supertest | `npm test` dentro de `backend/order-service` |
+| `order-service` | Integração de mensageria e cache Redis | Jest + Testcontainers | `npm run test:integration` dentro de `backend/order-service` |
 | `user-service` | Unitário (schemas Zod) | Jest + ts-jest | `npm test` dentro de `backend/user-service` |
 | `restaurant-service` | Unitário (schemas Zod) | Jest + ts-jest | `npm test` dentro de `backend/restaurant-service` |
+| `restaurant-service` | Integração de cache Redis | Jest + Testcontainers | `npm run test:integration` dentro de `backend/restaurant-service` |
 | `api-gateway` | *(sem suíte Jest neste repositório)* | — | Validar com E2E manual (curl/Postman) na porta 3000 |
 
 **Princípio:** testes unitários rodam **sem Docker** e **sem banco de dados**. O arquivo `app.integration.test.ts` do `order-service` usa **supertest** contra o Express com **Prisma mockado** (não é integração com Postgres real).
@@ -18,16 +20,17 @@ Este documento descreve **como rodar** os testes, **o que está coberto** e **co
 ## Pré-requisitos
 
 - Node.js compatível com o projeto (ex.: 22, como nas imagens Docker).
+- Docker Desktop em execucao para os testes com Testcontainers/Redis.
 - Dependências instaladas em cada serviço onde for rodar testes:
 
 ```bash
 cd backend/order-service
 npm install
 
-cd ../user-service
+cd ../restaurant-service
 npm install
 
-cd ../restaurant-service
+cd ../user-service
 npm install
 ```
 
@@ -43,6 +46,11 @@ npm test
 ```
 
 ```bash
+cd backend/order-service
+npm run test:integration
+```
+
+```bash
 cd backend/user-service
 npm test
 ```
@@ -50,6 +58,11 @@ npm test
 ```bash
 cd backend/restaurant-service
 npm test
+```
+
+```bash
+cd backend/restaurant-service
+npm run test:integration
 ```
 
 ### Modo watch (reexecuta ao salvar)
@@ -75,6 +88,8 @@ npm run test:coverage
 | `src/domain/order-status.test.ts` | Transições permitidas e proibidas entre `OrderStatus`. |
 | `src/validation/order-validation.test.ts` | Regras Zod de criação de pedido, listagem e `PATCH` de status. |
 | `src/app.integration.test.ts` | HTTP: `GET /test`, `GET /orders` (lista vazia com mock), `GET /orders/:id` 404, `PATCH .../status` 200 e 409. |
+| `src/cache/order-query-cache.integration.test.ts` | Cache-aside e invalidação do cache distribuído das queries do read model. |
+| `src/messaging/*.integration.test.ts` | Publicação do evento e projeção do read model com RabbitMQ/Postgres reais em containers. |
 
 ### `user-service`
 
@@ -88,6 +103,7 @@ npm run test:coverage
 |---------|-----------|
 | `src/validation/restaurant-validation.test.ts` | Nome, `managerId`, update mínimo, query de listagem. |
 | `src/validation/product-validation.test.ts` | Preço positivo, update mínimo, query `ids` em lista. |
+| `src/cache/product-cache-service.integration.test.ts` | Cache-aside e invalidação explícita do catálogo usando Redis em container. |
 
 ---
 
@@ -111,6 +127,7 @@ Depois, no **gateway** (`http://127.0.0.1:3000`):
 - `GET /users/1` → 200
 - `GET /restaurants/1/products?page=1&pageSize=5` → 200
 - `POST /orders` com JSON válido (usuário, restaurante e produto existentes) → 201
+- repetir `GET /restaurants/1/products` e `GET /orders` para observar `MISS` e depois `HIT` nos logs/cache
 
 No PowerShell, use `curl.exe` e corpo JSON em arquivo UTF-8 (ver `README.md` da pasta `docs` e documentação de cada serviço).
 
@@ -126,9 +143,9 @@ Isso valida o mesmo contrato exercitado em `order-status.test.ts`, mas contra o 
 
 ## Evolução recomendada (fora do escopo atual)
 
-- **Integração com Postgres real** para cada serviço (`DATABASE_URL` de teste + `prisma migrate deploy` antes da suíte).
 - **E2E** do stack com **supertest** no gateway ou Playwright/Newman.
 - **CI** (GitHub Actions) executando `npm test` em cada pasta `backend/*-service`.
+- **Métricas agregadas de cache** (`hits`, `misses`, `latência`) expostas por endpoint de observabilidade.
 
 ---
 

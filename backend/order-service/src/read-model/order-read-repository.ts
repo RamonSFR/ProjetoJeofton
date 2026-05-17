@@ -228,3 +228,19 @@ export const getOrderReadsPaginated = async (params: {
     },
   };
 };
+
+export const updateOrderReadStatus = async (params: {
+  orderId: number;
+  status: string;
+  updatedAt: Date;
+}): Promise<void> => {
+  await executeReadModelQuery<{ order_id: number }>(
+    `
+      UPDATE orders_read
+      SET status = $2, updated_at = $3
+      WHERE order_id = $1
+      RETURNING order_id
+    `,
+    [params.orderId, params.status, params.updatedAt.toISOString()]
+  );
+};

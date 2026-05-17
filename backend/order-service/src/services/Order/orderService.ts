@@ -10,6 +10,8 @@ import { randomUUID } from 'node:crypto';
 import type { OrderCreatedEvent } from '../../messaging/order-created-event';
 import { publishOrderCreatedEvent } from '../../messaging/publish-order-created-event';
 import { assertCustomerExists, fetchCustomerSnapshot } from '../user-service-client';
+import { invalidateOrderQueryCache } from '../../cache/order-query-cache-service';
+import { updateOrderReadStatus } from '../../read-model/order-read-repository';
 
 export class OrderNotFoundError extends Error {
   readonly name = 'OrderNotFoundError';
@@ -201,11 +203,18 @@ export const updateStatus = async (
       nextStatus
     );
   }
-  return prisma.order.update({
+  const updatedOrder = await prisma.order.update({
     where: { id: orderId },
     data: { status: nextStatus },
     include: { items: true },
   });
+  await updateOrderReadStatus({
+    orderId: updatedOrder.id,
+    status: updatedOrder.status,
+    updatedAt: updatedOrder.updatedAt,
+  });
+  await invalidateOrderQueryCache(updatedOrder.id);
+  return updatedOrder;
 };
 
 export const cancelOrder = async (orderId: number): Promise<OrderWithItems> => {
