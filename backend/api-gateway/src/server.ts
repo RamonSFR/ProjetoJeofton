@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { logger } from "./logger";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const USER_SERVICE_URL =
@@ -82,5 +83,5 @@ app.get("/realtime/info", (_req, res) => {
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`api-gateway na porta ${PORT}`);
+  logger.info({ port: PORT }, "api-gateway iniciado");
 });

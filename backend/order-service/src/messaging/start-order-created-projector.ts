@@ -1,23 +1,30 @@
-import amqp, { type Channel, type ChannelModel, type ConsumeMessage } from 'amqplib';
-import type { OrderCreatedEvent } from './order-created-event';
-import { ORDER_CREATED_EXCHANGE_NAME } from './order-created-event';
+import amqp, {
+  type Channel,
+  type ChannelModel,
+  type ConsumeMessage,
+} from "amqplib";
+import { logger } from "../logger";
+import type { OrderCreatedEvent } from "./order-created-event";
+import { ORDER_CREATED_EXCHANGE_NAME } from "./order-created-event";
 import {
   type IProcessedEventsRepository,
   ProcessedEventsRepository,
-} from '../read-model/processed-events-repository';
-import { saveOrderProjection } from '../read-model/order-read-repository';
-import { withReadModelTransaction } from '../read-model/read-model-db';
+} from "../read-model/processed-events-repository";
+import { saveOrderProjection } from "../read-model/order-read-repository";
+import { withReadModelTransaction } from "../read-model/read-model-db";
 
-const ORDER_PROJECTOR_QUEUE_NAME = 'GestaoPedidos.OrderService:PedidoCriadoProjection';
-const ORDER_CREATED_ROUTING_KEY = '';
-const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://admin:admin@127.0.0.1:5672';
+const ORDER_PROJECTOR_QUEUE_NAME =
+  "GestaoPedidos.OrderService:PedidoCriadoProjection";
+const ORDER_CREATED_ROUTING_KEY = "";
+const RABBITMQ_URL =
+  process.env.RABBITMQ_URL ?? "amqp://admin:admin@127.0.0.1:5672";
 
 const parseEventMessage = (message: ConsumeMessage): OrderCreatedEvent => {
-  return JSON.parse(message.content.toString('utf-8')) as OrderCreatedEvent;
+  return JSON.parse(message.content.toString("utf-8")) as OrderCreatedEvent;
 };
 
 const setupProjectionBindings = async (channel: Channel): Promise<void> => {
-  await channel.assertExchange(ORDER_CREATED_EXCHANGE_NAME, 'fanout', {
+  await channel.assertExchange(ORDER_CREATED_EXCHANGE_NAME, "fanout", {
     durable: true,
   });
   await channel.assertQueue(ORDER_PROJECTOR_QUEUE_NAME, {
@@ -26,31 +33,34 @@ const setupProjectionBindings = async (channel: Channel): Promise<void> => {
   await channel.bindQueue(
     ORDER_PROJECTOR_QUEUE_NAME,
     ORDER_CREATED_EXCHANGE_NAME,
-    ORDER_CREATED_ROUTING_KEY
+    ORDER_CREATED_ROUTING_KEY,
   );
 };
 
 const executeProjectionFlow = async (
   payload: OrderCreatedEvent,
-  processedEventsRepository: IProcessedEventsRepository
+  processedEventsRepository: IProcessedEventsRepository,
 ): Promise<boolean> => {
   return withReadModelTransaction<boolean>(async (client) => {
     const hasProcessed = await processedEventsRepository.hasEventBeenProcessed(
       client,
-      payload.eventId
+      payload.eventId,
     );
     if (hasProcessed) {
       return true;
     }
     await saveOrderProjection(client, payload);
-    await processedEventsRepository.registerProcessedEvent(client, payload.eventId);
+    await processedEventsRepository.registerProcessedEvent(
+      client,
+      payload.eventId,
+    );
     return false;
   });
 };
 
 const executeConsume = async (
   channel: Channel,
-  processedEventsRepository: IProcessedEventsRepository
+  processedEventsRepository: IProcessedEventsRepository,
 ): Promise<void> => {
   await channel.consume(
     ORDER_PROJECTOR_QUEUE_NAME,
@@ -60,26 +70,31 @@ const executeConsume = async (
       }
       try {
         const payload = parseEventMessage(message);
-        const hasProcessed = await executeProjectionFlow(payload, processedEventsRepository);
+        const hasProcessed = await executeProjectionFlow(
+          payload,
+          processedEventsRepository,
+        );
         if (hasProcessed) {
-          console.warn(
-            `[order-projector] Evento ${payload.eventId} ja foi processado. Ack sem reprojecao.`
+          logger.warn(
+            { eventId: payload.eventId },
+            "Evento PedidoCriadoEvent já foi processado. Ack sem reprojeção.",
           );
         }
         channel.ack(message);
       } catch (error: unknown) {
-        console.error('[order-projector] Falha ao projetar PedidoCriadoEvent', error);
+        logger.error({ err: error }, "Falha ao projetar PedidoCriadoEvent");
         channel.nack(message, false, true);
       }
     },
-    { noAck: false }
+    { noAck: false },
   );
 };
 
 export const startOrderCreatedProjector = async (): Promise<void> => {
   const connection: ChannelModel = await amqp.connect(RABBITMQ_URL);
   const channel: Channel = await connection.createChannel();
-  const processedEventsRepository: IProcessedEventsRepository = new ProcessedEventsRepository();
+  const processedEventsRepository: IProcessedEventsRepository =
+    new ProcessedEventsRepository();
   await setupProjectionBindings(channel);
   await executeConsume(channel, processedEventsRepository);
 };

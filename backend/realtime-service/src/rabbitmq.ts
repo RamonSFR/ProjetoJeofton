@@ -1,5 +1,6 @@
 import * as amqp from "amqplib";
 import { io } from "./socket";
+import { logger } from "./logger";
 
 const RABBITMQ_URL =
   process.env.RABBITMQ_URL ?? "amqp://admin:admin@localhost:5672";
@@ -12,7 +13,7 @@ export async function connectRabbitMQ() {
     connection = (await amqp.connect(RABBITMQ_URL)) as amqp.ChannelModel;
     channel = await connection.createChannel();
 
-    console.log("[RabbitMQ] Conectado ao RabbitMQ");
+    logger.info("Conectado ao RabbitMQ");
 
     // Setup exchange for orders
     // Setup exchange for order events (order-service publishes here)
@@ -28,7 +29,7 @@ export async function connectRabbitMQ() {
     // Bind to order events
     await channel.bindQueue(orderQueue.queue, "gestao-pedidos.events", "#");
 
-    console.log("[RabbitMQ] Queue configurada para eventos de pedidos");
+    logger.info("Queue configurada para eventos de pedidos");
 
     // Consume order messages
     channel.consume(orderQueue.queue, (msg) => {
@@ -36,11 +37,14 @@ export async function connectRabbitMQ() {
 
       try {
         const eventData = JSON.parse(msg.content.toString());
-        console.log("[RabbitMQ] Evento de pedido recebido:", {
-          eventId: eventData.eventId,
-          orderId: eventData.orderId,
-          restaurantId: eventData.restaurantId,
-        });
+        logger.info(
+          {
+            eventId: eventData.eventId,
+            orderId: eventData.orderId,
+            restaurantId: eventData.restaurantId,
+          },
+          "Evento de pedido recebido",
+        );
 
         // Emit to specific order room
         if (eventData.orderId) {
@@ -57,21 +61,21 @@ export async function connectRabbitMQ() {
 
         channel.ack(msg);
       } catch (error) {
-        console.error("[RabbitMQ] Erro ao processar mensagem:", error);
+        logger.error({ err: error }, "Erro ao processar mensagem");
         channel.nack(msg, false, true); // Requeue message
       }
     });
 
     // Handle connection errors
     connection.on("error", (err: any) => {
-      console.error("[RabbitMQ] Erro de conexão:", err);
+      logger.error({ err }, "Erro de conexão com RabbitMQ");
     });
 
     connection.on("close", () => {
-      console.log("[RabbitMQ] Conexão fechada");
+      logger.info("Conexão RabbitMQ fechada");
     });
   } catch (error) {
-    console.error("[RabbitMQ] Erro ao conectar:", error);
+    logger.error({ err: error }, "Erro ao conectar ao RabbitMQ");
     throw error;
   }
 }
@@ -80,8 +84,8 @@ export async function closeRabbitMQ() {
   try {
     if (channel) await channel.close();
     if (connection) await connection.close();
-    console.log("[RabbitMQ] Conexão fechada com sucesso");
+    logger.info("Conexão RabbitMQ fechada com sucesso");
   } catch (error) {
-    console.error("[RabbitMQ] Erro ao fechar conexão:", error);
+    logger.error({ err: error }, "Erro ao fechar conexão com RabbitMQ");
   }
 }

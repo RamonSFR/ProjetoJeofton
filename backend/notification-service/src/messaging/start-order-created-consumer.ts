@@ -1,16 +1,22 @@
-import amqp, { type Channel, type ChannelModel, type ConsumeMessage } from 'amqplib';
+import amqp, {
+  type Channel,
+  type ChannelModel,
+  type ConsumeMessage,
+} from "amqplib";
+import { logger } from "../logger";
 import {
   NOTIFICATIONS_QUEUE_NAME,
   ORDER_CREATED_EXCHANGE_NAME,
   type OrderCreatedEvent,
-} from './order-created-event';
+} from "./order-created-event";
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://admin:admin@127.0.0.1:5672';
-const ORDER_CREATED_ROUTING_KEY = '';
+const RABBITMQ_URL =
+  process.env.RABBITMQ_URL ?? "amqp://admin:admin@127.0.0.1:5672";
+const ORDER_CREATED_ROUTING_KEY = "";
 const processedEventIds = new Set<string>();
 
 const parseEvent = (message: ConsumeMessage): OrderCreatedEvent => {
-  const body = message.content.toString('utf-8');
+  const body = message.content.toString("utf-8");
   const payload = JSON.parse(body) as OrderCreatedEvent;
   return payload;
 };
@@ -24,13 +30,18 @@ const markEventAsProcessed = (eventId: string): void => {
 };
 
 const executeSimulatedEmailLog = (payload: OrderCreatedEvent): void => {
-  console.log(
-    `[E-MAIL SIMULADO] Para: ${payload.customerEmail} | Pedido: ${payload.orderId} | Total: R$ ${payload.totalAmount}`
+  logger.info(
+    {
+      customerEmail: payload.customerEmail,
+      orderId: payload.orderId,
+      totalAmount: payload.totalAmount,
+    },
+    "E-mail simulado enviado",
   );
 };
 
 const setupBindings = async (channel: Channel): Promise<void> => {
-  await channel.assertExchange(ORDER_CREATED_EXCHANGE_NAME, 'fanout', {
+  await channel.assertExchange(ORDER_CREATED_EXCHANGE_NAME, "fanout", {
     durable: true,
   });
   await channel.assertQueue(NOTIFICATIONS_QUEUE_NAME, {
@@ -39,7 +50,7 @@ const setupBindings = async (channel: Channel): Promise<void> => {
   await channel.bindQueue(
     NOTIFICATIONS_QUEUE_NAME,
     ORDER_CREATED_EXCHANGE_NAME,
-    ORDER_CREATED_ROUTING_KEY
+    ORDER_CREATED_ROUTING_KEY,
   );
 };
 
@@ -53,6 +64,10 @@ const executeConsume = async (channel: Channel): Promise<void> => {
       try {
         const payload = parseEvent(message);
         if (isEventAlreadyProcessed(payload.eventId)) {
+          logger.debug(
+            { eventId: payload.eventId },
+            "Evento PedidoCriadoEvent já processado",
+          );
           channel.ack(message);
           return;
         }
@@ -60,11 +75,14 @@ const executeConsume = async (channel: Channel): Promise<void> => {
         markEventAsProcessed(payload.eventId);
         channel.ack(message);
       } catch (error: unknown) {
-        console.error('Erro ao processar evento PedidoCriadoEvent', error);
+        logger.error(
+          { err: error },
+          "Erro ao processar evento PedidoCriadoEvent",
+        );
         channel.nack(message, false, false);
       }
     },
-    { noAck: false }
+    { noAck: false },
   );
 };
 
