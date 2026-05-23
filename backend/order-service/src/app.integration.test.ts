@@ -15,6 +15,7 @@ jest.mock('./database/prisma', () => ({
 jest.mock('./read-model/order-read-repository', () => ({
   getOrderReadById: jest.fn(),
   getOrderReadsPaginated: jest.fn(),
+  updateOrderReadStatus: jest.fn(),
 }));
 
 import app from './app';

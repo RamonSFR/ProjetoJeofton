@@ -14,6 +14,7 @@ import {
   restaurantIdForProductsParamSchema,
   updateProductBodySchema,
 } from '../validation/product-validation';
+import { publicResponseCache } from '../middleware/http-cache';
 
 const router = Router();
 
@@ -28,12 +29,14 @@ router.get(
   '/:restaurantId/products',
   validateRequest(restaurantIdForProductsParamSchema, 'params'),
   validateRequest(getProductsQuerySchema, 'query'),
+  publicResponseCache(30),
   getProductsByRestaurant
 );
 
 router.get(
   '/:restaurantId/products/:productId',
   validateRequest(restaurantAndProductIdParamSchema, 'params'),
+  publicResponseCache(60),
   getProductById
 );
 

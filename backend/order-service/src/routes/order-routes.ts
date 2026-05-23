@@ -13,6 +13,7 @@ import {
   orderIdParamSchema,
   patchOrderStatusBodySchema,
 } from "../validation/order-validation";
+import { publicResponseCache } from "../middleware/http-cache";
 
 const router = Router();
 
@@ -32,7 +33,7 @@ router.delete(
 );
 
 // Queries (read model)
-router.get("/", validateRequest(getOrdersQuerySchema, "query"), getOrders);
-router.get("/:id", validateRequest(orderIdParamSchema, "params"), getOrderById);
+router.get("/", validateRequest(getOrdersQuerySchema, "query"), publicResponseCache(15), getOrders);
+router.get("/:id", validateRequest(orderIdParamSchema, "params"), publicResponseCache(15), getOrderById);
 
 export default router;

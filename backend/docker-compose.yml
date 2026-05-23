@@ -1,4 +1,27 @@
 services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redissenha123}
+    ports:
+      - "6379:6379"
+    volumes:
+      - jeofton_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redissenha123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    depends_on:
+      redis:
+        condition: service_healthy
+
   rabbitmq:
     image: rabbitmq:3-management
     restart: unless-stopped
@@ -93,12 +116,16 @@ services:
       PORT: "3002"
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
       USER_SERVICE_URL: http://user-service:3001
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redissenha123}@redis:6379
+      REDIS_PREFIX: ProjetoJeofton:restaurant-service
     depends_on:
       db-restaurants:
         condition: service_healthy
       user-service:
         condition: service_started
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   order-service:
@@ -112,6 +139,8 @@ services:
       USER_SERVICE_URL: http://user-service:3001
       RESTAURANT_SERVICE_URL: http://restaurant-service:3002
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redissenha123}@redis:6379
+      REDIS_PREFIX: ProjetoJeofton:order-service
     depends_on:
       db-orders:
         condition: service_healthy
@@ -120,6 +149,8 @@ services:
       restaurant-service:
         condition: service_started
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   notification-service:
@@ -165,6 +196,7 @@ services:
         condition: service_healthy
 
 volumes:
+  jeofton_redis:
   jeofton_rabbitmq:
   jeofton_db_users:
   jeofton_db_restaurants:

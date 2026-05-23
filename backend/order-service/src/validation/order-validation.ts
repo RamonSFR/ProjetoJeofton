@@ -1,5 +1,15 @@
-import { OrderStatus } from '@prisma/client';
 import { z } from 'zod';
+
+const ORDER_STATUS_VALUES = [
+  'PENDING',
+  'CONFIRMED',
+  'PREPARING',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'CANCELLED',
+] as const;
+
+const orderStatusSchema = z.enum(ORDER_STATUS_VALUES);
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -31,11 +41,11 @@ export const getOrdersQuerySchema = z.object({
     .default(DEFAULT_PAGE_SIZE),
   customerId: z.coerce.number().int().positive().optional(),
   restaurantId: z.coerce.number().int().positive().optional(),
-  status: z.nativeEnum(OrderStatus).optional(),
+  status: orderStatusSchema.optional(),
 });
 
 export const patchOrderStatusBodySchema = z.object({
-  status: z.nativeEnum(OrderStatus),
+  status: orderStatusSchema,
 });
 
 export type CreateOrderBody = z.infer<typeof createOrderBodySchema>;
