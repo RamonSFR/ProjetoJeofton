@@ -21,8 +21,7 @@ let projectorConnection: ChannelModel | null = null;
 let projectorChannel: Channel | null = null;
 
 const getRabbitMqUrl = (): string => {
-  return
-  process.env.RABBITMQ_URL ?? "amqp://admin:admin@127.0.0.1:5672";
+  return process.env.RABBITMQ_URL ?? "amqp://admin:admin@127.0.0.1:5672";
 };
 
 const parseEventMessage = (message: ConsumeMessage): OrderCreatedEvent => {
