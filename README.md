@@ -122,7 +122,12 @@ No `order-service`, os endpoints de escrita (commands) continuam no write model 
 As leituras (`GET /orders` e `GET /orders/:id`) usam um read model denormalizado atualizado de forma eventual a partir do evento `PedidoCriadoEvent` via RabbitMQ.
 A projecao e idempotente, controlada por `processed_events` com unicidade de `event_id`.
 
+
 ## Estrutura de pastas(Cean architecture)
 Exemplo:
 
 <img width="685" height="582" alt="Captura de Tela (59)" src="https://github.com/user-attachments/assets/086c922f-f492-4405-bb75-d44dc672df4c" />
+
+##Print dos conteiners executando
+<img width="1920" height="1080" alt="Captura de Tela (100)" src="https://github.com/user-attachments/assets/2b4930b5-7f30-4fbc-a084-4017209278b1" />
+
