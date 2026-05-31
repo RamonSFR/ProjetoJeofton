@@ -90,6 +90,32 @@ pedido_itens (
  Entidades: Pedido (Order), Item do Pedido (OrderItem), Cliente (Customer Snapshot).
  Responsabilidades: Cálculo do total, fluxo de status do pedido (PENDENTE -> ENTREGUE), registro do endereço de entrega no momento da compra.
 
+## Versionamento e estrategia de branches (Git Flow)
+
+| Branch | Proposito |
+|--------|-----------|
+| `main` | Producao; apenas merges de `release/*` ou hotfix |
+| `develop` | Integracao continua do time |
+| `feature/*` | Desenvolvimento (ex.: `feature/pedidos/adicionar-campo-observacao`) |
+| `release/*` | Preparacao de release (ex.: `release/1.1.0`) |
+
+**Commits:** [Conventional Commits](https://www.conventionalcommits.org/) validados localmente por **commitlint** + **Husky** (`commit-msg`). Escopos do projeto: `pedidos`, `restaurantes`, `usuarios`, `produtos`, `gateway`, `frontend`, `infra`, etc. (ver `commitlint.config.js`).
+
+**Releases:** [release-please](https://github.com/googleapis/release-please) gera `CHANGELOG.md` e tags SemVer ao fazer merge em `main`. Workflow: `.github/workflows/release-please.yml`.
+
+**Branch protection (GitHub):** em producao real, `main` exige PR + review + status checks; `develop` exige PR e checks. Se estiver trabalhando solo, pode relaxar temporariamente "Require pull request" em `main` durante exercicios — mantenha a disciplina de PR na pratica.
+
+**Versao na aplicacao:**
+
+- Backend: `GET http://localhost:3000/api/v1/version` (api-gateway; variaveis `APP_VERSION`, `NODE_ENV`).
+- Frontend: footer fixo no canto inferior direito (proxy Vite `/api` → gateway em dev).
+
+Instalacao dos hooks (raiz do repositorio):
+
+```bash
+npm install
+```
+
 ## API em microservicos (recomendado)
 
 Agora os servicos ficam dentro de `backend/`.
@@ -102,7 +128,7 @@ cd backend
 docker compose up --build
 ```
 
-- **Gateway:** [http://localhost:3000](http://localhost:3000) — endpoints `GET /test`, `/users`, `/restaurants`, `/orders`.
+- **Gateway:** [http://localhost:3000](http://localhost:3000) — endpoints `GET /api/v1/version`, `/test`, `/users`, `/restaurants`, `/orders`.
 - **RabbitMQ Management UI:** [http://localhost:15672](http://localhost:15672) (usuario/senha `admin/admin`).
 - **Bancos:** PostgreSQL em `localhost:5434` (`db_users`), `localhost:5435` (`db_restaurants`) e `localhost:5436` (`db_orders`).
 

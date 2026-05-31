@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { logger } from "./logger";
+import versionRoutes from "./routes/version-routes";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const USER_SERVICE_URL =
@@ -14,6 +15,8 @@ const REALTIME_SERVICE_URL =
   process.env.REALTIME_SERVICE_URL ?? "http://127.0.0.1:3006";
 
 const app = express();
+
+app.use("/api/v1", versionRoutes);
 
 app.get("/test", (_req, res) => {
   res.json({ status: "ok" });

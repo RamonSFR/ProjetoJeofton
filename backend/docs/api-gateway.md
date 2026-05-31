@@ -15,11 +15,34 @@ Código-fonte: `backend/api-gateway/`.
 | Variável | Padrão (local) | Descrição |
 |----------|----------------|-----------|
 | `PORT` | `3000` | Porta HTTP do gateway. |
+| `APP_VERSION` | `0.0.0` | Versão SemVer exposta em `GET /api/v1/version`. |
+| `NODE_ENV` | `development` | Ambiente (`development`, `staging`, `production`). |
+| `BUILD_DATE` | (ISO atual) | Data da build; opcional em CI/Docker. |
 | `USER_SERVICE_URL` | `http://127.0.0.1:3001` | URL base do user-service (no Docker: `http://user-service:3001`). |
 | `RESTAURANT_SERVICE_URL` | `http://127.0.0.1:3002` | URL base do restaurant-service. |
 | `ORDER_SERVICE_URL` | `http://127.0.0.1:3003` | URL base do order-service. |
 
 ## Rotas próprias do gateway
+
+### `GET /api/v1/version`
+
+Metadados de build para o frontend e ferramentas de deploy.
+
+**Resposta `200`:**
+
+```json
+{
+  "version": "0.1.0-dev",
+  "environment": "Development",
+  "buildDate": "2026-05-30T12:00:00.000Z"
+}
+```
+
+```bash
+curl.exe -s "http://localhost:3000/api/v1/version"
+```
+
+---
 
 ### `GET /test`
 
