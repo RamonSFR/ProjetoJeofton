@@ -141,10 +141,17 @@ Isso valida o mesmo contrato exercitado em `order-status.test.ts`, mas contra o 
 
 ---
 
-## Evolução recomendada (fora do escopo atual)
+## CI (GitHub Actions)
+
+O workflow [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) executa automaticamente em PR/push para `main` e `develop`:
+
+- **user-service / restaurant-service / order-service:** `npm run test:coverage` (+ `test:integration` onde aplicavel).
+- **order-service:** inclui testes com **Testcontainers** (Postgres, RabbitMQ, Redis) — exige Docker no runner (ubuntu-latest do GitHub ja possui).
+- Relatorios **LCOV** em `coverage/lcov.info` por servico, enviados ao **SonarCloud** no job `SonarCloud — Quality Gate`.
+
+## Evolução recomendada
 
 - **E2E** do stack com **supertest** no gateway ou Playwright/Newman.
-- **CI** (GitHub Actions) executando `npm test` em cada pasta `backend/*-service`.
 - **Métricas agregadas de cache** (`hits`, `misses`, `latência`) expostas por endpoint de observabilidade.
 
 ---

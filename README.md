@@ -1,5 +1,9 @@
 # Projeto Tópicos Avançados em TI
 
+[![CI](https://github.com/RamonSFR/ProjetoJeofton/actions/workflows/ci.yml/badge.svg)](https://github.com/RamonSFR/ProjetoJeofton/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=RamonSFR_ProjetoJeofton&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=RamonSFR_ProjetoJeofton)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=RamonSFR_ProjetoJeofton&metric=coverage)](https://sonarcloud.io/summary/new_code?id=RamonSFR_ProjetoJeofton)
+
 ## Sobre o projeto
 
 Este projeto está sendo desenvolvido para a disciplina de "Tópicos Avançados em TI" ministrada pelo professor "Jeofton", UNIPÊ, 2026.1
@@ -103,7 +107,31 @@ pedido_itens (
 
 **Releases:** [release-please](https://github.com/googleapis/release-please) gera `CHANGELOG.md` e tags SemVer ao fazer merge em `main`. Workflow: `.github/workflows/release-please.yml`.
 
-**Branch protection (GitHub):** em producao real, `main` exige PR + review + status checks; `develop` exige PR e checks. Se estiver trabalhando solo, pode relaxar temporariamente "Require pull request" em `main` durante exercicios — mantenha a disciplina de PR na pratica.
+**Branch protection (GitHub):** em producao real, `main` exige PR + review + status checks; `develop` exige PR e checks. Apos a **primeira execucao** do workflow CI, marque como obrigatorios os checks **`Backend — Build e Testes`** e **`SonarCloud — Quality Gate`** (nomes do campo `name:` em `.github/workflows/ci.yml`). Se estiver trabalhando solo, pode relaxar temporariamente "Require pull request" em `main` durante exercicios — mantenha a disciplina de PR na pratica.
+
+## Integracao continua (CI)
+
+Pipeline em [`.github/workflows/ci.yml`](.github/workflows/ci.yml), disparado em **pull_request** e **push** para `main` e `develop`:
+
+| Job | O que valida |
+|-----|----------------|
+| **Backend — Build e Testes** | Jest (unitario + integracao com Testcontainers no `order-service`/`restaurant-service`), cobertura LCOV, `tsc` nos microsservicos e api-gateway |
+| **Frontend — Lint e Build** | ESLint + `tsc` + build Vite |
+| **SonarCloud — Quality Gate** | Analise estatica + cobertura (requer secret `SONAR_TOKEN` no repositorio) |
+
+**SonarCloud:** criar projeto em [sonarcloud.io](https://sonarcloud.io) (login GitHub), copiar `SONAR_TOKEN` para **Settings → Secrets → Actions**, ajustar `sonar.projectKey` e `sonar.organization` em [`sonar-project.properties`](sonar-project.properties) se diferirem de `RamonSFR_ProjetoJeofton` / `RamonSFR`. Quality Gate sugerido na aula: cobertura em codigo novo >= 70%.
+
+**Testes locais (mesmo que o CI):**
+
+```bash
+cd backend/user-service && npm ci && npm run test:coverage && npm run build
+cd ../restaurant-service && npm ci && npm run test:coverage && npm run test:integration && npm run build
+cd ../order-service && npm ci && npm run test:coverage && npm run build
+cd ../api-gateway && npm ci && npm run build
+cd ../../frontend && npm ci && npm run lint && npm run build
+```
+
+Requer **Docker** em execucao para testes de integracao (Testcontainers).
 
 **Versao na aplicacao:**
 
