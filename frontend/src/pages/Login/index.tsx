@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { getUserByEmail } from '../../lib/api'
+import { loginUser } from '../../lib/api'
 import { saveSession } from '../../lib/session'
 import { useAppDispatch } from '../../store/hooks'
 import { clearCart } from '../../store/cartSlice'
@@ -15,6 +15,7 @@ const Login = () => {
   const dispatch = useAppDispatch()
   const [loginState, setLoginState] = useState<UserRole>('client')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -23,7 +24,10 @@ const Login = () => {
     try {
       setLoading(true)
 
-      const user = await getUserByEmail(email.trim())
+      const user = await loginUser({
+        email: email.trim(),
+        password
+      })
       saveSession(user, loginState)
       dispatch(clearCart())
       navigate('/')
@@ -70,6 +74,13 @@ const Login = () => {
             placeholder="seu-email@exemplo.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Digite sua senha"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
             required
           />
           <button type="submit" disabled={loading}>

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -7,28 +7,33 @@ const MAX_PAGE_SIZE = 100;
 const cpfSchema = z
   .string()
   .trim()
-  .transform((value) => value.replace(/\D/g, ''))
-  .pipe(z.string().length(11, 'CPF deve conter 11 digitos'));
+  .transform((value) => value.replace(/\D/g, ""))
+  .pipe(z.string().length(11, "CPF deve conter 11 digitos"));
 
 export const createUserBodySchema = z.object({
   cpf: cpfSchema,
-  name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().trim().email('E-mail invalido'),
-  password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
+  name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().trim().email("E-mail invalido"),
+  password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
 });
 
 export const updateUserBodySchema = createUserBodySchema
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
-    message: 'Informe ao menos um campo para atualizar',
+    message: "Informe ao menos um campo para atualizar",
   });
 
 export const userIdParamSchema = z.object({
-  id: z.coerce.number().int().positive('ID invalido'),
+  id: z.coerce.number().int().positive("ID invalido"),
 });
 
 export const getUserByEmailQuerySchema = z.object({
-  email: z.string().trim().email('E-mail invalido'),
+  email: z.string().trim().email("E-mail invalido"),
+});
+
+export const loginBodySchema = z.object({
+  email: z.string().trim().email("E-mail invalido"),
+  password: z.string().min(1, "Senha obrigatoria"),
 });
 
 export const getUsersQuerySchema = z.object({
@@ -45,4 +50,5 @@ export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 export type UserIdParam = z.infer<typeof userIdParamSchema>;
 export type GetUserByEmailQuery = z.infer<typeof getUserByEmailQuerySchema>;
+export type LoginBody = z.infer<typeof loginBodySchema>;
 export type GetUsersQuery = z.infer<typeof getUsersQuerySchema>;

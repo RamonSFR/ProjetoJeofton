@@ -78,6 +78,12 @@ export const getUsers = (page = 1, pageSize = 20) =>
 export const getUserByEmail = (email: string) =>
   request<UserRecord>(USER_SERVICE_BASE_URL, `/email${buildQuery({ email })}`)
 
+export const loginUser = (payload: { email: string; password: string }) =>
+  request<UserRecord>(USER_SERVICE_BASE_URL, '/login', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+
 export const getRestaurants = (page = 1, pageSize = 20) =>
   request<PaginatedResponse<RestaurantRecord>>(
     RESTAURANT_SERVICE_BASE_URL,

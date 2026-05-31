@@ -1,12 +1,13 @@
-import type { Request, Response } from 'express';
-import * as userService from '../../services/User/userService';
+import type { Request, Response } from "express";
+import * as userService from "../../services/User/userService";
 import type {
   CreateUserBody,
   GetUserByEmailQuery,
   GetUsersQuery,
+  LoginBody,
   UpdateUserBody,
   UserIdParam,
-} from '../../validation/user-validation';
+} from "../../validation/user-validation";
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   const { page, pageSize } = req.validatedQuery as GetUsersQuery;
@@ -14,7 +15,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     const result = await userService.getPaginated({ page, pageSize });
     res.status(200).json(result);
   } catch {
-    res.status(500).json({ message: 'Erro ao buscar usuarios.' });
+    res.status(500).json({ message: "Erro ao buscar usuarios." });
   }
 };
 
@@ -23,12 +24,12 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await userService.getById(id);
     if (!user) {
-      res.status(404).json({ message: 'Usuario nao encontrado.' });
+      res.status(404).json({ message: "Usuario nao encontrado." });
       return;
     }
     res.status(200).json(user);
   } catch {
-    res.status(500).json({ message: 'Erro ao buscar usuario.' });
+    res.status(500).json({ message: "Erro ao buscar usuario." });
   }
 };
 
@@ -38,7 +39,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
     const newUser = await userService.create(body);
     res.status(201).json(newUser);
   } catch {
-    res.status(500).json({ message: 'Erro ao criar usuario.' });
+    res.status(500).json({ message: "Erro ao criar usuario." });
   }
 };
 
@@ -49,7 +50,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
     const updatedUser = await userService.update(id, body);
     res.status(200).json(updatedUser);
   } catch {
-    res.status(500).json({ message: 'Erro ao atualizar usuario.' });
+    res.status(500).json({ message: "Erro ao atualizar usuario." });
   }
 };
 
@@ -59,20 +60,42 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
     const deletedUser = await userService.remove(id);
     res.status(200).json(deletedUser);
   } catch {
-    res.status(500).json({ message: 'Erro ao remover usuario.' });
+    res.status(500).json({ message: "Erro ao remover usuario." });
   }
 };
 
-export const getByEmail = async (req: Request, res: Response): Promise<void> => {
+export const getByEmail = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const { email } = req.validatedQuery as GetUserByEmailQuery;
   try {
     const user = await userService.getByEmail(email);
     if (!user) {
-      res.status(404).json({ message: 'Usuario nao encontrado.' });
+      res.status(404).json({ message: "Usuario nao encontrado." });
       return;
     }
     res.status(200).json(user);
   } catch {
-    res.status(500).json({ message: 'Erro ao buscar usuario por email.' });
+    res.status(500).json({ message: "Erro ao buscar usuario por email." });
+  }
+};
+
+export const login = async (req: Request, res: Response): Promise<void> => {
+  const body = req.validatedBody as LoginBody;
+  try {
+    const user = await userService.login({
+      email: body.email,
+      password: body.password,
+    });
+
+    if (!user) {
+      res.status(401).json({ message: "Email ou senha invalidos." });
+      return;
+    }
+
+    res.status(200).json(user);
+  } catch {
+    res.status(500).json({ message: "Erro ao autenticar usuario." });
   }
 };

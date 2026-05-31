@@ -16,6 +16,15 @@ const REALTIME_SERVICE_URL =
 
 const app = express();
 
+const rewritePrefixedPath = (prefix: string) => (path: string) => {
+  if (path === prefix || path.startsWith(`${prefix}/`)) {
+    const rest = path.replace(new RegExp(`^${prefix}`), "");
+    return rest.length > 0 ? rest : "/";
+  }
+
+  return path;
+};
+
 // Enable CORS for the frontend origin (development-friendly)
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 app.use(
@@ -44,13 +53,16 @@ app.use(
   createProxyMiddleware({
     target: USER_SERVICE_URL,
     changeOrigin: true,
-    pathRewrite: (path) => {
-      if (path === "/users" || path.startsWith("/users/")) {
-        const rest = path.replace(/^\/users/, "");
-        return rest.length > 0 ? rest : "/";
-      }
-      return path;
-    },
+    pathRewrite: rewritePrefixedPath("/users"),
+  }),
+);
+
+app.use(
+  "/api/users",
+  createProxyMiddleware({
+    target: USER_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: rewritePrefixedPath("/api/users"),
   }),
 );
 
@@ -59,13 +71,16 @@ app.use(
   createProxyMiddleware({
     target: RESTAURANT_SERVICE_URL,
     changeOrigin: true,
-    pathRewrite: (path) => {
-      if (path === "/restaurants" || path.startsWith("/restaurants/")) {
-        const rest = path.replace(/^\/restaurants/, "");
-        return rest.length > 0 ? rest : "/";
-      }
-      return path;
-    },
+    pathRewrite: rewritePrefixedPath("/restaurants"),
+  }),
+);
+
+app.use(
+  "/api/restaurants",
+  createProxyMiddleware({
+    target: RESTAURANT_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: rewritePrefixedPath("/api/restaurants"),
   }),
 );
 
@@ -82,6 +97,24 @@ app.use(
         return `/orders${path}`;
       }
       return `/orders/${path}`;
+    },
+  }),
+);
+
+app.use(
+  "/api/orders",
+  createProxyMiddleware({
+    target: ORDER_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: (path) => {
+      const cleanedPath = path.replace(/^\/api\/orders/, "");
+      if (cleanedPath === "" || cleanedPath === "/") {
+        return "/orders";
+      }
+      if (cleanedPath.startsWith("/")) {
+        return `/orders${cleanedPath}`;
+      }
+      return `/orders/${cleanedPath}`;
     },
   }),
 );
