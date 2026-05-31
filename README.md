@@ -119,7 +119,7 @@ Pipeline em [`.github/workflows/ci.yml`](.github/workflows/ci.yml), disparado em
 | **Frontend — Lint e Build** | ESLint + `tsc` + build Vite |
 | **SonarCloud — Quality Gate** | Analise estatica + cobertura (requer secret `SONAR_TOKEN` no repositorio) |
 
-**SonarCloud:** criar projeto em [sonarcloud.io](https://sonarcloud.io) (login GitHub), copiar `SONAR_TOKEN` para **Settings → Secrets → Actions**, ajustar `sonar.projectKey` e `sonar.organization` em [`sonar-project.properties`](sonar-project.properties) se diferirem de `RamonSFR_ProjetoJeofton` / `RamonSFR`. Quality Gate sugerido na aula: cobertura em codigo novo >= 70%.
+**SonarCloud:** criar projeto em [sonarcloud.io](https://sonarcloud.io) (login GitHub). Token local (opcional): copie [`.env.sonar.example`](.env.sonar.example) para `.env.sonar` — arquivo ignorado pelo Git. **Para o CI funcionar**, o mesmo valor deve estar em **GitHub → Settings → Secrets and variables → Actions → New repository secret** com nome exatamente `SONAR_TOKEN`. Ajuste `sonar.projectKey` e `sonar.organization` em [`sonar-project.properties`](sonar-project.properties) se diferirem de `RamonSFR_ProjetoJeofton` / `RamonSFR`. Quality Gate sugerido na aula: cobertura em codigo novo >= 70%.
 
 **Testes locais (mesmo que o CI):**
 
