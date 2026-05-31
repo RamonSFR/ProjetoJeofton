@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { getUserByEmail } from '../../lib/api'
 import { saveSession } from '../../lib/session'
-import { useSession } from '../../lib/useSession'
 import { useAppDispatch } from '../../store/hooks'
 import { clearCart } from '../../store/cartSlice'
 import type { UserRole } from '../../types/api'
@@ -14,10 +13,8 @@ import * as S from './styles'
 const Login = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const session = useSession()
   const [loginState, setLoginState] = useState<UserRole>('client')
   const [email, setEmail] = useState('')
-  const [statusMessage, setStatusMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -25,15 +22,13 @@ const Login = () => {
 
     try {
       setLoading(true)
-      setStatusMessage('')
 
       const user = await getUserByEmail(email.trim())
       saveSession(user, loginState)
       dispatch(clearCart())
-      setStatusMessage('Login realizado com sucesso.')
       navigate('/')
     } catch (loginError) {
-      setStatusMessage(
+      console.error(
         loginError instanceof Error
           ? loginError.message
           : 'Ocorreu um erro ao tentar validar o login. Por favor, tente novamente.'

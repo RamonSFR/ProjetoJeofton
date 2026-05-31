@@ -39,7 +39,7 @@ const RestaurantDetails = () => {
 
         const productsResponse = await getRestaurantProducts(restaurantId, {
           page: 1,
-          pageSize: 200
+          pageSize: 100
         })
         setProducts(productsResponse.data)
       } catch (error) {
@@ -70,7 +70,7 @@ const RestaurantDetails = () => {
       })
     )
 
-    setMessage('Item added to your cart.')
+    setMessage('Item adicionado ao carrinho.')
   }
 
   return (
