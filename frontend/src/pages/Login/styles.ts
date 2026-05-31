@@ -3,94 +3,149 @@ import styled from 'styled-components'
 import { colors as c } from '../../styles/GlobalStyle'
 
 export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: ${c.red1};
+  width: min(1180px, calc(100% - 32px));
+  min-height: calc(100vh - 120px);
+  margin: 24px auto 56px;
+  display: grid;
+  place-items: center;
+`
+
+export const LoginCard = styled.div`
+  width: min(560px, 100%);
+  padding: 34px;
+  border-radius: 32px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(132, 204, 22, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(18, 27, 42, 0.96), rgba(9, 17, 29, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+`
+
+export const HeaderBlock = styled.div`
+  margin-bottom: 18px;
 
   h1 {
-    font-size: 3rem;
-    color: ${c.white1};
-    margin-bottom: 32px;
-    font-weight: 900;
-    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+    margin-top: 12px;
+    font-size: clamp(2rem, 4vw, 3.3rem);
+    line-height: 1;
+  }
+
+  p {
+    margin-top: 14px;
+    color: ${c.gray2};
+    line-height: 1.7;
   }
 `
 
+export const Kicker = styled.span`
+  color: ${c.red4};
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 800;
+`
+
 export const Form = styled.form`
-  padding: 32px 16px;
-  border-radius: 8px;
+  padding: 18px;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: ${c.white1};
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.04);
 
+  select,
   input {
-    width: 384px;
-    height: 32px;
-    border-radius: 2px;
-    border: 1px solid ${c.gray1};
+    width: 100%;
+    min-height: 52px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0 16px;
+    background: rgba(9, 17, 29, 0.75);
+    color: ${c.white1};
 
     &:focus {
+      border-color: ${c.red2};
       outline: none;
-      border-color: ${c.red1};
     }
+  }
+
+  select {
+    appearance: none;
   }
 
   button {
     width: 100%;
-    margin-top: 16px;
-    border-radius: 2px;
-    padding: 8px 0;
+    min-height: 52px;
+    border-radius: 16px;
     border: none;
-    background-color: ${c.red1};
-    color: ${c.white1};
-    font-weight: 600;
-    cursor: pointer;
+    background: linear-gradient(135deg, ${c.red1}, ${c.red3});
+    color: ${c.white2};
+    font-weight: 800;
+
+    &:disabled {
+      opacity: 0.72;
+      cursor: wait;
+    }
   }
 `
 
 export const FormTitle = styled.h2`
-  margin-bottom: 32px;
-  color: ${c.red1};
-  font-weight: 700;
+  font-size: 1.1rem;
+  color: ${c.white1};
 `
 
 export const SelectLoginButtons = styled.div`
   display: flex;
-  margin-bottom: 16px;
+  margin: 18px 0;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 `
 
 export const LoginButton = styled.button`
-  width: 128px;
-  cursor: pointer;
-  padding: 8px 16px;
-  background-color: ${c.gray2};
+  width: 50%;
+  min-height: 48px;
   border: none;
-  text-align: center;
-  color: ${c.red2};
+  background: rgba(255, 255, 255, 0.04);
+  color: ${c.gray2};
+  font-weight: 800;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 
   &.isActive {
-    background-color: ${c.red3};
+    background: linear-gradient(135deg, ${c.red1}, ${c.red2});
     color: ${c.white1};
   }
 
-  &.left {
-    border-radius: 12px 0 0 12px;
-    border-left: 2px solid ${c.red1};
+  &:not(.isActive):hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+`
+
+export const FooterBlock = styled.div`
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
   }
 
-  &.right {
-    border-radius: 0 12px 12px 0;
-    border-right: 2px solid ${c.red1};
+  span {
+    color: ${c.gray2};
+    line-height: 1.6;
   }
 
-  &.right, &.left {
-    border-bottom: 2px solid ${c.red1};
-    border-top: 2px solid ${c.red1};
+  p {
+    margin-top: 12px;
+    color: ${c.red4};
+    font-weight: 700;
   }
 `

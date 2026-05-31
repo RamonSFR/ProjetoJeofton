@@ -1,33 +1,156 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+
+import { getOrders, getRestaurants, updateOrderStatus } from '../../lib/api'
+import { useSession } from '../../lib/useSession'
+import type { OrderRecord, RestaurantRecord } from '../../types/api'
+
 import * as S from './styles'
 
 const Orders = () => {
-  // Mock de dados para exemplificar a lista
-  const orders = [
-    { id: '#1234', date: '12/05/2026', status: 'Entregue', total: 'R$ 85,90' },
-    { id: '#1235', date: '15/05/2026', status: 'A caminho', total: 'R$ 42,00' },
-  ]
+  const session = useSession()
+  const moneyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
+    []
+  )
+
+  const [restaurants, setRestaurants] = useState<RestaurantRecord[]>([])
+  const [orders, setOrders] = useState<OrderRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true)
+      setMessage('')
+
+      const restaurantsResponse = await getRestaurants(1, 100)
+      setRestaurants(restaurantsResponse.data)
+
+      if (!session) {
+        setOrders([])
+        return
+      }
+
+      const ordersResponse = await getOrders({
+        page: 1,
+        pageSize: 40,
+        customerId: session.id
+      })
+
+      setOrders(ordersResponse.data)
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : 'Unable to load orders.'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id])
+
+  const handleConfirmDelivery = async (orderId: number) => {
+    try {
+      setSaving(true)
+      setMessage('')
+
+      await updateOrderStatus(orderId, 'DELIVERED')
+      await loadOrders()
+      setMessage('Delivery confirmed.')
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to update order status.'
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <S.Container>
-      <h1>EFOOD</h1>
-      <S.OrdersContent>
-        <S.Title>Meus Pedidos</S.Title>
-        <S.OrderList>
-          {orders.map((order) => (
-            <S.OrderItem key={order.id}>
-              <div>
-                <strong>Pedido {order.id}</strong>
-                <span>Data: {order.date}</span>
-              </div>
-              <div>
-                <S.StatusTag>{order.status}</S.StatusTag>
-                <p>{order.total}</p>
-              </div>
-            </S.OrderItem>
-          ))}
-        </S.OrderList>
-        <S.BackButton to="/">Voltar para Home</S.BackButton>
-      </S.OrdersContent>
+      <S.PageTitle>
+        <S.Kicker>Pedidos</S.Kicker>
+        <h1>Verifique seus pedidos e confirme a entrega</h1>
+      </S.PageTitle>
+
+      {message ? <S.MessageBanner>{message}</S.MessageBanner> : null}
+
+      {!session ? (
+        <S.EmptyState>
+          <h2>Você precisa fazer login para ver seus pedidos.</h2>
+          <p>Após fazer login, esta área mostrará apenas seus próprios pedidos.</p>
+          <Link to="/login">Ir para login</Link>
+        </S.EmptyState>
+      ) : (
+        <S.Panel>
+          <S.PanelHeader>
+            <div>
+              <S.SectionTag>Meus Pedidos</S.SectionTag>
+              <h2>histórico de pedidos</h2>
+            </div>
+            <span>{loading ? 'Carregando...' : `${orders.length} pedidos`}</span>
+          </S.PanelHeader>
+
+          {loading ? <p>Carregando seu histórico de pedidos...</p> : null}
+
+          <S.OrderList>
+            {orders.map((order) => {
+              const restaurant = restaurants.find(
+                (item) => item.id === order.restaurantId
+              )
+
+              return (
+                <S.OrderItem key={order.id}>
+                  <div>
+                    <strong>Pedido #{order.id}</strong>
+                    <span>
+                      {restaurant?.name ?? `Restaurant #${order.restaurantId}`}
+                    </span>
+                    {order.items?.length ? (
+                      <ul>
+                        {order.items.map((item) => (
+                          <li key={`${order.id}-${item.productId}`}>
+                            {item.productNameSnapshot} x{item.quantity}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <S.StatusTag>{order.status}</S.StatusTag>
+                    <strong>
+                      {moneyFormatter.format(Number(order.total))}
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={() => void handleConfirmDelivery(order.id)}
+                      disabled={saving || order.status !== 'OUT_FOR_DELIVERY'}
+                    >
+                      Confirmar Entrega
+                    </button>
+                  </div>
+                </S.OrderItem>
+              )
+            })}
+          </S.OrderList>
+
+          {!loading && orders.length === 0 ? (
+            <S.EmptyState>
+              <h3>Nenhum pedido encontrado.</h3>
+              <p>Faça um pedido através da página do restaurante ou do carrinho.</p>
+            </S.EmptyState>
+          ) : null}
+        </S.Panel>
+      )}
     </S.Container>
   )
 }

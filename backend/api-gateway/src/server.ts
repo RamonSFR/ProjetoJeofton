@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { logger } from "./logger";
 
@@ -14,6 +15,17 @@ const REALTIME_SERVICE_URL =
   process.env.REALTIME_SERVICE_URL ?? "http://127.0.0.1:3006";
 
 const app = express();
+
+// Enable CORS for the frontend origin (development-friendly)
+const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false,
+  }),
+);
 
 app.get("/test", (_req, res) => {
   res.json({ status: "ok" });
