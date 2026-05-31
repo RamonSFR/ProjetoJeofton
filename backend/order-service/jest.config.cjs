@@ -7,4 +7,11 @@ module.exports = {
   clearMocks: true,
   restoreMocks: true,
   moduleFileExtensions: ['ts', 'js', 'json'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.integration.test.ts',
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov'],
 };
