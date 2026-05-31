@@ -7,7 +7,7 @@ export type OrderReadItem = {
   readonly productId: number;
   readonly productName: string;
   readonly quantity: number;
-  readonly unitPrice: string;
+  readonly unitPrice: number;
 };
 
 /**
@@ -19,7 +19,7 @@ export type OrderRead = {
   readonly customerId: number;
   readonly customerName: string;
   readonly customerEmail: string;
-  readonly totalAmount: string;
+  readonly totalAmount: number;
   readonly status: string;
   readonly deliveryAddressSnapshot: string | null;
   readonly createdAt: string;

@@ -5,7 +5,7 @@ export interface CartItem {
   restaurantId: number
   restaurantName: string
   name: string
-  price: string
+  price: number
   quantity: number
 }
 

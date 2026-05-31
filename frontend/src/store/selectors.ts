@@ -7,7 +7,7 @@ export const selectCartCount = (state: RootState) =>
 
 export const selectCartTotal = (state: RootState) =>
   state.cart.items.reduce(
-    (total, item) => total + Number(item.price) * item.quantity,
+    (total, item) => total + item.price * item.quantity,
     0
   )
 

@@ -1,12 +1,12 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const ORDER_STATUS_VALUES = [
-  'PENDING',
-  'CONFIRMED',
-  'PREPARING',
-  'OUT_FOR_DELIVERY',
-  'DELIVERED',
-  'CANCELLED',
+  "PENDING",
+  "CONFIRMED",
+  "PREPARING",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+  "CANCELLED",
 ] as const;
 
 const orderStatusSchema = z.enum(ORDER_STATUS_VALUES);
@@ -16,19 +16,23 @@ const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
 const orderItemLineSchema = z.object({
-  productId: z.coerce.number().int().positive('productId invalido'),
-  quantity: z.coerce.number().int().positive('quantity invalida'),
+  productId: z.number().int().positive("productId invalido"),
+  quantity: z.number().int().positive("quantity invalida"),
 });
 
-export const createOrderBodySchema = z.object({
-  restaurantId: z.coerce.number().int().positive('restaurantId invalido'),
-  customerId: z.coerce.number().int().positive('customerId invalido'),
-  items: z.array(orderItemLineSchema).min(1, 'Pedido deve ter ao menos um item'),
-  deliveryAddress: z.string().trim().min(1).optional(),
-});
+export const createOrderBodySchema = z
+  .object({
+    restaurantId: z.number().int().positive("restaurantId invalido"),
+    customerId: z.number().int().positive("customerId invalido"),
+    items: z
+      .array(orderItemLineSchema)
+      .min(1, "Pedido deve ter ao menos um item"),
+    deliveryAddress: z.string().trim().min(1).optional(),
+  })
+  .strict();
 
 export const orderIdParamSchema = z.object({
-  id: z.coerce.number().int().positive('id invalido'),
+  id: z.coerce.number().int().positive("id invalido"),
 });
 
 export const getOrdersQuerySchema = z.object({

@@ -18,5 +18,5 @@ export type OrderCreatedEvent = {
   readonly items: readonly OrderCreatedEventItem[];
 };
 
-export const ORDER_CREATED_EXCHANGE_NAME = 'gestao-pedidos.events';
-export const ORDER_CREATED_ROUTING_KEY = 'pedido.criado';
+export const ORDER_CREATED_EXCHANGE_NAME = "gestao-pedidos.events";
+export const ORDER_CREATED_ROUTING_KEY = "pedido.criado";

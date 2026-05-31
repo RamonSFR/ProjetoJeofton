@@ -1,7 +1,11 @@
-import type { PoolClient } from 'pg';
-import type { OrderCreatedEvent } from '../messaging/order-created-event';
-import { executeReadModelQuery } from './read-model-db';
-import type { OrderRead, OrderReadItem, PaginatedOrderReadsResult } from './read-model-types';
+import type { PoolClient } from "pg";
+import type { OrderCreatedEvent } from "../messaging/order-created-event";
+import { executeReadModelQuery } from "./read-model-db";
+import type {
+  OrderRead,
+  OrderReadItem,
+  PaginatedOrderReadsResult,
+} from "./read-model-types";
 
 type OrderReadRow = {
   order_id: number;
@@ -32,22 +36,27 @@ const mapItemRow = (row: OrderReadItemRow): OrderReadItem => {
     productId: row.product_id,
     productName: row.product_name,
     quantity: row.quantity,
-    unitPrice: row.unit_price,
+    unitPrice: Number(row.unit_price),
   };
 };
 
 const toIsoString = (value: Date | string): string => {
-  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+  return value instanceof Date
+    ? value.toISOString()
+    : new Date(value).toISOString();
 };
 
-const mapOrderRow = (row: OrderReadRow, items: readonly OrderReadItem[]): OrderRead => {
+const mapOrderRow = (
+  row: OrderReadRow,
+  items: readonly OrderReadItem[],
+): OrderRead => {
   return {
     orderId: row.order_id,
     restaurantId: row.restaurant_id,
     customerId: row.customer_id,
     customerName: row.customer_name,
     customerEmail: row.customer_email,
-    totalAmount: row.total_amount,
+    totalAmount: Number(row.total_amount),
     status: row.status,
     deliveryAddressSnapshot: row.delivery_address_snapshot,
     createdAt: toIsoString(row.created_at),
@@ -57,7 +66,7 @@ const mapOrderRow = (row: OrderReadRow, items: readonly OrderReadItem[]): OrderR
 };
 
 const fetchItemsByOrderIds = async (
-  orderIds: readonly number[]
+  orderIds: readonly number[],
 ): Promise<Map<number, readonly OrderReadItem[]>> => {
   if (orderIds.length === 0) {
     return new Map<number, readonly OrderReadItem[]>();
@@ -69,7 +78,7 @@ const fetchItemsByOrderIds = async (
       WHERE order_id = ANY($1::int[])
       ORDER BY id ASC
     `,
-    [orderIds]
+    [orderIds],
   );
   const groupedItems = new Map<number, OrderReadItem[]>();
   for (const row of itemRows) {
@@ -82,7 +91,7 @@ const fetchItemsByOrderIds = async (
 
 export const saveOrderProjection = async (
   client: PoolClient,
-  payload: OrderCreatedEvent
+  payload: OrderCreatedEvent,
 ): Promise<void> => {
   await client.query(
     `
@@ -115,12 +124,14 @@ export const saveOrderProjection = async (
       payload.customerName,
       payload.customerEmail,
       payload.totalAmount,
-      'PENDING',
+      "PENDING",
       payload.deliveryAddressSnapshot,
       payload.createdAt,
-    ]
+    ],
   );
-  await client.query('DELETE FROM order_items_read WHERE order_id = $1', [payload.orderId]);
+  await client.query("DELETE FROM order_items_read WHERE order_id = $1", [
+    payload.orderId,
+  ]);
   const insertItemSql = `
     INSERT INTO order_items_read (order_id, product_id, product_name, quantity, unit_price)
     VALUES ($1, $2, $3, $4, $5)
@@ -136,7 +147,9 @@ export const saveOrderProjection = async (
   }
 };
 
-export const getOrderReadById = async (orderId: number): Promise<OrderRead | null> => {
+export const getOrderReadById = async (
+  orderId: number,
+): Promise<OrderRead | null> => {
   const orders = await executeReadModelQuery<OrderReadRow>(
     `
       SELECT
@@ -153,7 +166,7 @@ export const getOrderReadById = async (orderId: number): Promise<OrderRead | nul
       FROM orders_read
       WHERE order_id = $1
     `,
-    [orderId]
+    [orderId],
   );
   const orderRow = orders[0];
   if (!orderRow) {
@@ -186,7 +199,7 @@ export const getOrderReadsPaginated = async (params: {
     values.push(status);
     clauses.push(`status = $${values.length}`);
   }
-  const whereSql = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
+  const whereSql = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
   const listValues = [...values, pageSize, offset];
   const rows = await executeReadModelQuery<OrderReadRow>(
     `
@@ -207,17 +220,19 @@ export const getOrderReadsPaginated = async (params: {
       LIMIT $${values.length + 1}
       OFFSET $${values.length + 2}
     `,
-    listValues
+    listValues,
   );
   const totalRows = await executeReadModelQuery<{ total: string }>(
     `SELECT COUNT(*)::text AS total FROM orders_read ${whereSql}`,
-    values
+    values,
   );
-  const total = Number(totalRows[0]?.total ?? '0');
+  const total = Number(totalRows[0]?.total ?? "0");
   const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
   const orderIds = rows.map((row) => row.order_id);
   const itemsByOrder = await fetchItemsByOrderIds(orderIds);
-  const data = rows.map((row) => mapOrderRow(row, itemsByOrder.get(row.order_id) ?? []));
+  const data = rows.map((row) =>
+    mapOrderRow(row, itemsByOrder.get(row.order_id) ?? []),
+  );
   return {
     data,
     meta: {
@@ -241,6 +256,6 @@ export const updateOrderReadStatus = async (params: {
       WHERE order_id = $1
       RETURNING order_id
     `,
-    [params.orderId, params.status, params.updatedAt.toISOString()]
+    [params.orderId, params.status, params.updatedAt.toISOString()],
   );
 };

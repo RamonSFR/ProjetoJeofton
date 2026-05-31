@@ -64,7 +64,7 @@ const RestaurantDetails = () => {
         product: {
           productId: product.id,
           name: product.name,
-          price: product.price
+          price: Number(product.price)
         },
         quantity: 1
       })

@@ -86,7 +86,9 @@ const Orders = () => {
       {!session ? (
         <S.EmptyState>
           <h2>Você precisa fazer login para ver seus pedidos.</h2>
-          <p>Após fazer login, esta área mostrará apenas seus próprios pedidos.</p>
+          <p>
+            Após fazer login, esta área mostrará apenas seus próprios pedidos.
+          </p>
           <Link to="/login">Ir para login</Link>
         </S.EmptyState>
       ) : (
@@ -96,21 +98,24 @@ const Orders = () => {
               <S.SectionTag>Meus Pedidos</S.SectionTag>
               <h2>histórico de pedidos</h2>
             </div>
-            <span>{loading ? 'Carregando...' : `${orders.length} pedidos`}</span>
+            <span>
+              {loading ? 'Carregando...' : `${orders.length} pedidos`}
+            </span>
           </S.PanelHeader>
 
           {loading ? <p>Carregando seu histórico de pedidos...</p> : null}
 
           <S.OrderList>
             {orders.map((order) => {
+              const orderId = (order as any).id ?? (order as any).orderId
               const restaurant = restaurants.find(
                 (item) => item.id === order.restaurantId
               )
 
               return (
-                <S.OrderItem key={order.id}>
+                <S.OrderItem key={orderId}>
                   <div>
-                    <strong>Pedido #{order.id}</strong>
+                    <strong>Pedido #{orderId}</strong>
                     <span>
                       {restaurant?.name ?? `Restaurant #${order.restaurantId}`}
                     </span>
@@ -128,11 +133,27 @@ const Orders = () => {
                   <div>
                     <S.StatusTag>{order.status}</S.StatusTag>
                     <strong>
-                      {moneyFormatter.format(Number(order.total))}
+                      {moneyFormatter.format(
+                        // Robust numeric parsing: accept number, numeric string, or fall back to 0
+                        (() => {
+                          const raw =
+                            (order as any).total ?? (order as any).totalAmount
+                          if (typeof raw === 'number') return raw
+                          if (typeof raw === 'string') {
+                            // Replace comma decimal separators and strip non-numeric chars except dot and minus
+                            const cleaned = raw
+                              .replace(/,/g, '.')
+                              .replace(/[^0-9.\-]/g, '')
+                            const parsed = Number(cleaned)
+                            return Number.isFinite(parsed) ? parsed : 0
+                          }
+                          return 0
+                        })()
+                      )}
                     </strong>
                     <button
                       type="button"
-                      onClick={() => void handleConfirmDelivery(order.id)}
+                      onClick={() => void handleConfirmDelivery(orderId)}
                       disabled={saving || order.status !== 'OUT_FOR_DELIVERY'}
                     >
                       Confirmar Entrega
@@ -146,7 +167,9 @@ const Orders = () => {
           {!loading && orders.length === 0 ? (
             <S.EmptyState>
               <h3>Nenhum pedido encontrado.</h3>
-              <p>Faça um pedido através da página do restaurante ou do carrinho.</p>
+              <p>
+                Faça um pedido através da página do restaurante ou do carrinho.
+              </p>
             </S.EmptyState>
           ) : null}
         </S.Panel>
