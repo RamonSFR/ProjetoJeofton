@@ -7,6 +7,12 @@ import type { OrderRecord, RestaurantRecord } from '../../types/api'
 
 import * as S from './styles'
 
+type OrderViewRecord = OrderRecord & {
+  orderId?: number
+  totalAmount?: number | string
+  total?: number | string
+}
+
 const Orders = () => {
   const session = useSession()
   const moneyFormatter = useMemo(
@@ -16,7 +22,7 @@ const Orders = () => {
   )
 
   const [restaurants, setRestaurants] = useState<RestaurantRecord[]>([])
-  const [orders, setOrders] = useState<OrderRecord[]>([])
+  const [orders, setOrders] = useState<OrderViewRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -55,7 +61,14 @@ const Orders = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id])
 
-  const handleConfirmDelivery = async (orderId: number) => {
+  const handleConfirmDelivery = async (orderId: number, status: string) => {
+    if (status !== 'OUT_FOR_DELIVERY') {
+      setMessage(
+        'Este pedido só pode ser confirmado se tiver saído para entrega.'
+      )
+      return
+    }
+
     try {
       setSaving(true)
       setMessage('')
@@ -107,7 +120,7 @@ const Orders = () => {
 
           <S.OrderList>
             {orders.map((order) => {
-              const orderId = (order as any).id ?? (order as any).orderId
+              const orderId = order.id ?? order.orderId
               const restaurant = restaurants.find(
                 (item) => item.id === order.restaurantId
               )
@@ -122,7 +135,7 @@ const Orders = () => {
                     {order.items?.length ? (
                       <ul>
                         {order.items.map((item) => (
-                          <li key={`${order.id}-${item.productId}`}>
+                          <li key={`${orderId}-${item.productId}`}>
                             {item.productNameSnapshot} x{item.quantity}
                           </li>
                         ))}
@@ -136,14 +149,13 @@ const Orders = () => {
                       {moneyFormatter.format(
                         // Robust numeric parsing: accept number, numeric string, or fall back to 0
                         (() => {
-                          const raw =
-                            (order as any).total ?? (order as any).totalAmount
+                          const raw = order.total ?? order.totalAmount
                           if (typeof raw === 'number') return raw
                           if (typeof raw === 'string') {
                             // Replace comma decimal separators and strip non-numeric chars except dot and minus
                             const cleaned = raw
                               .replace(/,/g, '.')
-                              .replace(/[^0-9.\-]/g, '')
+                              .replace(/[^0-9.-]/g, '')
                             const parsed = Number(cleaned)
                             return Number.isFinite(parsed) ? parsed : 0
                           }
@@ -153,8 +165,10 @@ const Orders = () => {
                     </strong>
                     <button
                       type="button"
-                      onClick={() => void handleConfirmDelivery(orderId)}
-                      disabled={saving || order.status !== 'OUT_FOR_DELIVERY'}
+                      onClick={() =>
+                        void handleConfirmDelivery(orderId, order.status)
+                      }
+                      disabled={saving}
                     >
                       Confirmar Entrega
                     </button>
