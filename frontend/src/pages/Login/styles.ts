@@ -106,6 +106,24 @@ export const SelectLoginButtons = styled.div`
   border: 1px solid rgba(255, 255, 255, 0.1);
 `
 
+export const FeedbackBanner = styled.div<{ $variant: 'success' | 'error' }>`
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid
+    ${({ $variant }) =>
+      $variant === 'success'
+        ? 'rgba(132, 204, 22, 0.5)'
+        : 'rgba(239, 68, 68, 0.5)'};
+  background: ${({ $variant }) =>
+    $variant === 'success'
+      ? 'rgba(132, 204, 22, 0.14)'
+      : 'rgba(239, 68, 68, 0.14)'};
+  color: ${c.white1};
+  line-height: 1.5;
+  font-weight: 700;
+`
+
 export const LoginButton = styled.button`
   width: 50%;
   min-height: 48px;

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -17,12 +17,25 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(
+        (window as Window & { __loginTimer?: number }).__loginTimer
+      )
+    }
+  }, [])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     try {
       setLoading(true)
+      setFeedback(null)
 
       const user = await loginUser({
         email: email.trim(),
@@ -30,13 +43,24 @@ const Login = () => {
       })
       saveSession(user, loginState)
       dispatch(clearCart())
-      navigate('/')
+      setFeedback({
+        type: 'success',
+        message: 'Login realizado com sucesso. Redirecionando...'
+      })
+
+      const timer = window.setTimeout(() => {
+        navigate('/')
+      }, 900)
+
+      ;(window as Window & { __loginTimer?: number }).__loginTimer = timer
     } catch (loginError) {
-      console.error(
-        loginError instanceof Error
-          ? loginError.message
-          : 'Ocorreu um erro ao tentar validar o login. Por favor, tente novamente.'
-      )
+      setFeedback({
+        type: 'error',
+        message:
+          loginError instanceof Error
+            ? loginError.message
+            : 'Ocorreu um erro ao tentar validar o login. Por favor, tente novamente.'
+      })
     } finally {
       setLoading(false)
     }
@@ -66,6 +90,16 @@ const Login = () => {
             Gerente
           </S.LoginButton>
         </S.SelectLoginButtons>
+
+        {feedback ? (
+          <S.FeedbackBanner
+            $variant={feedback.type}
+            role="status"
+            aria-live="polite"
+          >
+            {feedback.message}
+          </S.FeedbackBanner>
+        ) : null}
 
         <S.Form onSubmit={handleSubmit}>
           <S.FormTitle>Faça login com seu email</S.FormTitle>
