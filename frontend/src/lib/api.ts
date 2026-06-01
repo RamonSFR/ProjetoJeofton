@@ -126,7 +126,7 @@ export const getProduct = (restaurantId: number, productId: number) =>
 
 export const createProduct = (
   restaurantId: number,
-  payload: Pick<ProductRecord, 'name' | 'price'>
+  payload: Pick<ProductRecord, 'name'> & { price: number | string }
 ) =>
   request<ProductRecord>(
     RESTAURANT_SERVICE_BASE_URL,
@@ -140,7 +140,7 @@ export const createProduct = (
 export const updateProduct = (
   restaurantId: number,
   productId: number,
-  payload: Partial<Pick<ProductRecord, 'name' | 'price'>>
+  payload: Partial<Pick<ProductRecord, 'name'>> & { price?: number | string }
 ) =>
   request<ProductRecord>(
     RESTAURANT_SERVICE_BASE_URL,

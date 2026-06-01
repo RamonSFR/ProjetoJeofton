@@ -41,8 +41,11 @@ export interface OrderItemRecord {
 
 export interface OrderRecord {
   id: number
+  orderId?: number
   restaurantId: number
   customerId: number
+  customerName?: string
+  customerEmail?: string
   total: string
   status: OrderStatus
   deliveryAddressSnapshot?: string | null
