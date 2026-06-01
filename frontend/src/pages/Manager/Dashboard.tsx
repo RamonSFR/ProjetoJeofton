@@ -47,6 +47,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const getRestaurantName = (id: number) =>
+    restaurants.find((r) => r.restaurant.id === id)?.restaurant.name ??
+    `Restaurante #${id}`
+
   useEffect(() => {
     const loadDashboard = async () => {
       if (!session || session.role !== 'manager') {
@@ -235,8 +239,9 @@ const Dashboard = () => {
           ) : (
             recentOrders.slice(0, 6).map((order) => (
               <S.Notice key={getOrderId(order)}>
-                Pedido #{getOrderId(order)} - Restaurante #{order.restaurantId}{' '}
-                - {order.status} - {moneyFormatter.format(getOrderTotal(order))}
+                Pedido #{getOrderId(order)} -{' '}
+                {getRestaurantName(order.restaurantId)} - {order.status} -{' '}
+                {moneyFormatter.format(getOrderTotal(order))}
                 {order.items?.length ? (
                   <>
                     {' '}
