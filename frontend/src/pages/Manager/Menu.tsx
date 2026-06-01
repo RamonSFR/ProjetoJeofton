@@ -5,7 +5,7 @@ import {
   createProduct,
   deleteProduct,
   getRestaurantProducts,
-  updateProduct,
+  updateProduct
 } from '../../lib/api'
 import type { ProductRecord } from '../../types/api'
 
@@ -25,7 +25,8 @@ const initialFormState: ProductFormState = {
 const ManagerMenu = () => {
   const { restaurant } = useOutletContext<ManagerRestaurantContext>()
   const moneyFormatter = useMemo(
-    () => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
+    () =>
+      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
     []
   )
 
@@ -50,7 +51,9 @@ const ManagerMenu = () => {
       setProducts(response.data)
     } catch (fetchError) {
       setError(
-        fetchError instanceof Error ? fetchError.message : 'Unable to load menu.'
+        fetchError instanceof Error
+          ? fetchError.message
+          : 'Unable to load menu.'
       )
     } finally {
       setLoading(false)
@@ -89,7 +92,9 @@ const ManagerMenu = () => {
       await loadProducts()
     } catch (saveError) {
       setError(
-        saveError instanceof Error ? saveError.message : 'Unable to save product.'
+        saveError instanceof Error
+          ? saveError.message
+          : 'Unable to save product.'
       )
     } finally {
       setSaving(false)
@@ -113,7 +118,9 @@ const ManagerMenu = () => {
       setMessage('Produto removido.')
     } catch (deleteError) {
       setError(
-        deleteError instanceof Error ? deleteError.message : 'Unable to delete product.'
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'Unable to delete product.'
       )
     } finally {
       setSaving(false)
@@ -136,8 +143,14 @@ const ManagerMenu = () => {
       <S.FormCard>
         <S.SectionHeader>
           <div>
-            <S.Kicker>{editingProductId === null ? 'Adicionar' : 'Editar'}</S.Kicker>
-            <h3>{editingProductId === null ? 'Novo item de menu' : `Editar item #${editingProductId}`}</h3>
+            <S.Kicker>
+              {editingProductId === null ? 'Adicionar' : 'Editar'}
+            </S.Kicker>
+            <h3>
+              {editingProductId === null
+                ? 'Novo item de menu'
+                : `Editar item #${editingProductId}`}
+            </h3>
           </div>
         </S.SectionHeader>
 
@@ -145,7 +158,9 @@ const ManagerMenu = () => {
           <S.FieldGrid>
             <S.Input
               value={form.name}
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, name: event.target.value }))
+              }
               placeholder="Nome do prato"
               required
             />
@@ -154,7 +169,12 @@ const ManagerMenu = () => {
               step="0.01"
               min="0"
               value={form.price}
-              onChange={(event) => setForm((current) => ({ ...current, price: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  price: event.target.value
+                }))
+              }
               placeholder="Preço"
               required
             />
@@ -162,7 +182,9 @@ const ManagerMenu = () => {
 
           <S.ButtonRow>
             <S.PrimaryButton type="submit" disabled={saving}>
-              {editingProductId === null ? 'Adicionar item' : 'Salvar alterações'}
+              {editingProductId === null
+                ? 'Adicionar item'
+                : 'Salvar alterações'}
             </S.PrimaryButton>
             {editingProductId !== null ? (
               <S.SecondaryButton
@@ -186,10 +208,16 @@ const ManagerMenu = () => {
             <span>{moneyFormatter.format(Number(product.price))}</span>
 
             <S.ProductActions>
-              <S.SecondaryButton type="button" onClick={() => handleEdit(product)}>
+              <S.SecondaryButton
+                type="button"
+                onClick={() => handleEdit(product)}
+              >
                 Editar
               </S.SecondaryButton>
-              <S.DangerButton type="button" onClick={() => void handleDelete(product.id)}>
+              <S.DangerButton
+                type="button"
+                onClick={() => void handleDelete(product.id)}
+              >
                 Remover
               </S.DangerButton>
             </S.ProductActions>
@@ -198,9 +226,7 @@ const ManagerMenu = () => {
       </S.ProductGrid>
 
       {!loading && products.length === 0 ? (
-        <S.EmptyState>
-          Nenhum item de menu cadastrado ainda.
-        </S.EmptyState>
+        <S.EmptyState>Nenhum item de menu cadastrado ainda.</S.EmptyState>
       ) : null}
     </S.Section>
   )

@@ -21,7 +21,11 @@ export const TopNav = styled.header`
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(circle at top left, rgba(132, 204, 22, 0.12), transparent 28%),
+    radial-gradient(
+      circle at top left,
+      rgba(132, 204, 22, 0.12),
+      transparent 28%
+    ),
     linear-gradient(145deg, rgba(18, 27, 42, 0.98), rgba(9, 17, 29, 0.98));
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
 `
@@ -188,7 +192,11 @@ export const HeroCopy = styled.div`
   padding: 30px;
   border-radius: 30px;
   background:
-    radial-gradient(circle at top left, rgba(217, 119, 6, 0.16), transparent 30%),
+    radial-gradient(
+      circle at top left,
+      rgba(217, 119, 6, 0.16),
+      transparent 30%
+    ),
     linear-gradient(145deg, rgba(18, 27, 42, 0.96), rgba(9, 17, 29, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.08);
 
@@ -209,7 +217,11 @@ export const HeroCopy = styled.div`
 export const HeroPanel = styled.aside`
   padding: 24px;
   border-radius: 30px;
-  background: linear-gradient(180deg, rgba(132, 204, 22, 0.12), rgba(18, 27, 42, 0.94));
+  background: linear-gradient(
+    180deg,
+    rgba(132, 204, 22, 0.12),
+    rgba(18, 27, 42, 0.94)
+  );
   border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;

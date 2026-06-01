@@ -19,7 +19,8 @@ const getOrderId = (order: OrderRecord) => order.id ?? order.orderId ?? 0
 const Dashboard = () => {
   const session = useSession()
   const moneyFormatter = useMemo(
-    () => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
+    () =>
+      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
     []
   )
 
@@ -59,9 +60,7 @@ const Dashboard = () => {
         )
 
         const allOrders = summaries.flatMap((summary) =>
-          summary.orderCount > 0
-            ? [summary.restaurant.id]
-            : []
+          summary.orderCount > 0 ? [summary.restaurant.id] : []
         )
 
         const recentOrdersResponse = linkedRestaurants.length
@@ -77,7 +76,9 @@ const Dashboard = () => {
         void allOrders
       } catch (fetchError) {
         setError(
-          fetchError instanceof Error ? fetchError.message : 'Unable to load manager dashboard.'
+          fetchError instanceof Error
+            ? fetchError.message
+            : 'Unable to load manager dashboard.'
         )
       } finally {
         setLoading(false)
@@ -94,7 +95,11 @@ const Dashboard = () => {
           <S.Kicker>Dashboard</S.Kicker>
           <h1>Resumo da operação</h1>
         </div>
-        <span>{loading ? 'Carregando...' : `${restaurants.length} restaurantes vinculados`}</span>
+        <span>
+          {loading
+            ? 'Carregando...'
+            : `${restaurants.length} restaurantes vinculados`}
+        </span>
       </S.SectionHeader>
 
       {error ? <S.Notice>{error}</S.Notice> : null}
@@ -102,10 +107,12 @@ const Dashboard = () => {
       <S.Hero>
         <S.HeroCopy>
           <S.Kicker>Visão geral</S.Kicker>
-          <h1>Gerencie seus restaurantes e acompanhe os pedidos em um único lugar.</h1>
+          <h1>
+            Gerencie seus restaurantes e acompanhe os pedidos em um único lugar.
+          </h1>
           <p>
-            Use a área de Restaurants para abrir um restaurante específico, editar o menu e acompanhar
-            os pedidos em andamento.
+            Use a área de Restaurants para abrir um restaurante específico,
+            editar o menu e acompanhar os pedidos em andamento.
           </p>
         </S.HeroCopy>
 
@@ -121,7 +128,10 @@ const Dashboard = () => {
               <strong>
                 {loading
                   ? '...'
-                  : restaurants.reduce((total, item) => total + item.productCount, 0)}
+                  : restaurants.reduce(
+                      (total, item) => total + item.productCount,
+                      0
+                    )}
               </strong>
             </div>
             <div>
@@ -129,7 +139,10 @@ const Dashboard = () => {
               <strong>
                 {loading
                   ? '...'
-                  : restaurants.reduce((total, item) => total + item.orderCount, 0)}
+                  : restaurants.reduce(
+                      (total, item) => total + item.orderCount,
+                      0
+                    )}
               </strong>
             </div>
           </S.HeroStats>
@@ -143,13 +156,21 @@ const Dashboard = () => {
             <S.Kicker>Restaurants</S.Kicker>
             <h2>Restaurantes vinculados</h2>
           </div>
-          <span>{loading ? 'Carregando...' : `${restaurants.length} cards`}</span>
+          <span>
+            {loading ? 'Carregando...' : `${restaurants.length} cards`}
+          </span>
         </S.SectionHeader>
 
         <S.CardGrid>
           {restaurants.map(({ restaurant }) => (
-            <S.RestaurantCard key={restaurant.id} to={`/manager/restaurants/${restaurant.id}`}>
-              <S.RestaurantImage src={getRestaurantImage(restaurant.id)} alt={restaurant.name} />
+            <S.RestaurantCard
+              key={restaurant.id}
+              to={`/manager/restaurants/${restaurant.id}`}
+            >
+              <S.RestaurantImage
+                src={getRestaurantImage(restaurant.id)}
+                alt={restaurant.name}
+              />
               <S.CardBody>
                 <strong>{restaurant.name}</strong>
                 <span>Click para abrir menu e pedidos</span>
@@ -176,12 +197,15 @@ const Dashboard = () => {
 
         <S.Panel>
           {recentOrders.length === 0 ? (
-            <S.EmptyState>Os pedidos desse gerente aparecerão aqui quando houver movimentação.</S.EmptyState>
+            <S.EmptyState>
+              Os pedidos desse gerente aparecerão aqui quando houver
+              movimentação.
+            </S.EmptyState>
           ) : (
             recentOrders.slice(0, 6).map((order) => (
               <S.Notice key={getOrderId(order)}>
-                Pedido #{getOrderId(order)} - Restaurante #{order.restaurantId} - {order.status} -{' '}
-                {moneyFormatter.format(Number(order.total))}
+                Pedido #{getOrderId(order)} - Restaurante #{order.restaurantId}{' '}
+                - {order.status} - {moneyFormatter.format(Number(order.total))}
               </S.Notice>
             ))
           )}

@@ -47,7 +47,9 @@ const ManagerRestaurantWorkspace = () => {
         setRestaurant(restaurantResponse)
       } catch (fetchError) {
         setError(
-          fetchError instanceof Error ? fetchError.message : 'Unable to load restaurant.'
+          fetchError instanceof Error
+            ? fetchError.message
+            : 'Unable to load restaurant.'
         )
       } finally {
         setLoading(false)
@@ -89,7 +91,8 @@ const ManagerRestaurantWorkspace = () => {
           <S.Kicker>Restaurant</S.Kicker>
           <h1>{restaurant.name}</h1>
           <p>
-            Use as abas abaixo para editar o menu e acompanhar os pedidos deste restaurante.
+            Use as abas abaixo para editar o menu e acompanhar os pedidos deste
+            restaurante.
           </p>
         </S.HeroCopy>
 
@@ -113,10 +116,16 @@ const ManagerRestaurantWorkspace = () => {
       </S.Hero>
 
       <S.Tabs>
-        <NavLink to="menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink
+          to="menu"
+          className={({ isActive }) => (isActive ? 'active' : '')}
+        >
           Menu
         </NavLink>
-        <NavLink to="orders" className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink
+          to="orders"
+          className={({ isActive }) => (isActive ? 'active' : '')}
+        >
           Orders
         </NavLink>
       </S.Tabs>

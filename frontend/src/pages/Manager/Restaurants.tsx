@@ -25,11 +25,15 @@ const ManagerRestaurants = () => {
 
         const response = await getRestaurants(1, 100)
         setRestaurants(
-          response.data.filter((restaurant) => restaurant.managerId === session.id)
+          response.data.filter(
+            (restaurant) => restaurant.managerId === session.id
+          )
         )
       } catch (fetchError) {
         setError(
-          fetchError instanceof Error ? fetchError.message : 'Unable to load restaurants.'
+          fetchError instanceof Error
+            ? fetchError.message
+            : 'Unable to load restaurants.'
         )
       } finally {
         setLoading(false)
@@ -53,8 +57,14 @@ const ManagerRestaurants = () => {
 
       <S.CardGrid>
         {restaurants.map((restaurant) => (
-          <S.RestaurantCard key={restaurant.id} to={`/manager/restaurants/${restaurant.id}`}>
-            <S.RestaurantImage src={getRestaurantImage(restaurant.id)} alt={restaurant.name} />
+          <S.RestaurantCard
+            key={restaurant.id}
+            to={`/manager/restaurants/${restaurant.id}`}
+          >
+            <S.RestaurantImage
+              src={getRestaurantImage(restaurant.id)}
+              alt={restaurant.name}
+            />
             <S.CardBody>
               <strong>{restaurant.name}</strong>
               <span>Abra para editar menu e acompanhar pedidos</span>

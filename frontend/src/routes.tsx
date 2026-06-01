@@ -23,7 +23,10 @@ const AppRoutes = () => (
     <Route path="/manager" element={<Manager />}>
       <Route index element={<ManagerDashboard />} />
       <Route path="restaurants" element={<ManagerRestaurants />} />
-      <Route path="restaurants/:restaurantId" element={<ManagerRestaurantWorkspace />}>
+      <Route
+        path="restaurants/:restaurantId"
+        element={<ManagerRestaurantWorkspace />}
+      >
         <Route index element={<Navigate to="menu" replace />} />
         <Route path="menu" element={<ManagerMenu />} />
         <Route path="orders" element={<ManagerOrders />} />

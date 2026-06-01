@@ -25,12 +25,15 @@ const getOrderId = (order: OrderRecord) => order.id ?? order.orderId ?? 0
 const ManagerOrders = () => {
   const { restaurant } = useOutletContext<ManagerRestaurantContext>()
   const moneyFormatter = useMemo(
-    () => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
+    () =>
+      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
     []
   )
 
   const [orders, setOrders] = useState<OrderRecord[]>([])
-  const [selectedStatus, setSelectedStatus] = useState<Record<number, OrderStatus>>({})
+  const [selectedStatus, setSelectedStatus] = useState<
+    Record<number, OrderStatus>
+  >({})
   const [loading, setLoading] = useState(true)
   const [savingOrderId, setSavingOrderId] = useState<number | null>(null)
   const [error, setError] = useState('')
@@ -49,15 +52,20 @@ const ManagerOrders = () => {
 
       setOrders(response.data)
       setSelectedStatus(
-        response.data.reduce<Record<number, OrderStatus>>((accumulator, order) => {
-          const orderId = getOrderId(order)
-          accumulator[orderId] = order.status
-          return accumulator
-        }, {})
+        response.data.reduce<Record<number, OrderStatus>>(
+          (accumulator, order) => {
+            const orderId = getOrderId(order)
+            accumulator[orderId] = order.status
+            return accumulator
+          },
+          {}
+        )
       )
     } catch (fetchError) {
       setError(
-        fetchError instanceof Error ? fetchError.message : 'Unable to load orders.'
+        fetchError instanceof Error
+          ? fetchError.message
+          : 'Unable to load orders.'
       )
     } finally {
       setLoading(false)
@@ -69,7 +77,10 @@ const ManagerOrders = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurant.id])
 
-  const handleSaveStatus = async (orderId: number, currentStatus: OrderStatus) => {
+  const handleSaveStatus = async (
+    orderId: number,
+    currentStatus: OrderStatus
+  ) => {
     const nextStatus = selectedStatus[orderId] ?? currentStatus
 
     if (currentStatus === 'DELIVERED') {
@@ -84,7 +95,9 @@ const ManagerOrders = () => {
       setMessage(`Pedido #${orderId} atualizado para ${nextStatus}.`)
     } catch (saveError) {
       setError(
-        saveError instanceof Error ? saveError.message : 'Unable to update order status.'
+        saveError instanceof Error
+          ? saveError.message
+          : 'Unable to update order status.'
       )
     } finally {
       setSavingOrderId(null)
@@ -106,19 +119,22 @@ const ManagerOrders = () => {
 
       <S.OrderList>
         {orders.map((order) => {
-            const orderId = getOrderId(order)
+          const orderId = getOrderId(order)
           const total = moneyFormatter.format(formatCurrency(order.total))
 
           return (
-              <S.OrderCard key={orderId}>
+            <S.OrderCard key={orderId}>
               <S.OrderInfo>
-                  <h3>Pedido #{orderId}</h3>
+                <h3>Pedido #{orderId}</h3>
                 <span>
                   Cliente: {order.customerName ?? `#${order.customerId}`}
                   {order.customerEmail ? ` · ${order.customerEmail}` : ''}
                 </span>
                 <span>Total: {total}</span>
-                <span>Delivery: {order.deliveryAddressSnapshot ?? 'Sem endereço informado'}</span>
+                <span>
+                  Delivery:{' '}
+                  {order.deliveryAddressSnapshot ?? 'Sem endereço informado'}
+                </span>
 
                 <div>
                   <strong>Itens</strong>
@@ -155,7 +171,9 @@ const ManagerOrders = () => {
 
                     <S.TextButton
                       type="button"
-                      onClick={() => void handleSaveStatus(orderId, order.status)}
+                      onClick={() =>
+                        void handleSaveStatus(orderId, order.status)
+                      }
                       disabled={savingOrderId === orderId}
                     >
                       Alterar status
