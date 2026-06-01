@@ -229,6 +229,7 @@ export const HeroPanel = styled.aside`
   gap: 16px;
 
   img {
+    border-radius: 24px;
     width: 100%;
   }
 `

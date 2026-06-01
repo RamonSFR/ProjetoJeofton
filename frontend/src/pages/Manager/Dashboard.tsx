@@ -81,16 +81,32 @@ const Dashboard = () => {
           summary.orderCount > 0 ? [summary.restaurant.id] : []
         )
 
-        const recentOrdersResponse = linkedRestaurants.length
-          ? await getOrders({
-              page: 1,
-              pageSize: 12,
-              restaurantId: linkedRestaurants[0].id
-            })
-          : { data: [] as OrderRecord[] }
+        let mergedRecent: OrderRecord[] = []
+
+        if (linkedRestaurants.length) {
+          // Fetch recent orders for each linked restaurant and merge
+          const perRestaurant = await Promise.all(
+            linkedRestaurants.map((r) =>
+              getOrders({ page: 1, pageSize: 12, restaurantId: r.id })
+            )
+          )
+
+          mergedRecent = perRestaurant.flatMap((res) => res.data)
+
+          // sort by createdAt (newest first) falling back to order id
+          mergedRecent.sort((a, b) => {
+            const aTime = a.createdAt ? Date.parse(a.createdAt) : 0
+            const bTime = b.createdAt ? Date.parse(b.createdAt) : 0
+            if (aTime !== bTime) return bTime - aTime
+            return (b.orderId ?? b.id) - (a.orderId ?? a.id)
+          })
+
+          // limit to 12 items
+          mergedRecent = mergedRecent.slice(0, 12)
+        }
 
         setRestaurants(summaries)
-        setRecentOrders(recentOrdersResponse.data)
+        setRecentOrders(mergedRecent)
         void allOrders
       } catch (fetchError) {
         setError(
