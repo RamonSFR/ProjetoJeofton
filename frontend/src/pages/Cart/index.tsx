@@ -161,7 +161,7 @@ const Cart = () => {
               onClick={() => void handlePlaceOrder()}
               disabled={submitting}
             >
-              {submitting ? 'Placing order...' : 'Place order'}
+              {submitting ? 'Fazendo Pedido...' : 'Fazer Pedido'}
             </button>
 
             {!session ? (

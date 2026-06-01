@@ -136,7 +136,10 @@ const Orders = () => {
                       <ul>
                         {order.items.map((item) => (
                           <li key={`${orderId}-${item.productId}`}>
-                            {item.productNameSnapshot} x{item.quantity}
+                            {item.productName ??
+                              item.productNameSnapshot ??
+                              'Item sem nome'}{' '}
+                            x{item.quantity}
                           </li>
                         ))}
                       </ul>
