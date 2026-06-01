@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Outlet, useNavigate, useParams } from 'react-router-dom'
+import { Outlet, useNavigate, useParams } from 'react-router-dom'
 
 import { getRestaurant } from '../../lib/api'
 import { getRestaurantImage } from '../../lib/restaurant-images'
@@ -116,18 +116,18 @@ const ManagerRestaurantWorkspace = () => {
       </S.Hero>
 
       <S.Tabs>
-        <NavLink
+        <S.TabLink
           to="menu"
           className={({ isActive }) => (isActive ? 'active' : '')}
         >
-          Menu
-        </NavLink>
-        <NavLink
+          Cardápio
+        </S.TabLink>
+        <S.TabLink
           to="orders"
           className={({ isActive }) => (isActive ? 'active' : '')}
         >
-          Orders
-        </NavLink>
+          Pedidos
+        </S.TabLink>
       </S.Tabs>
 
       <Outlet context={{ restaurant }} />

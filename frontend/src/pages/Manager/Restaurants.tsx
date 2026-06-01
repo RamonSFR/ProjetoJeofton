@@ -47,10 +47,10 @@ const ManagerRestaurants = () => {
     <S.Section>
       <S.SectionHeader>
         <div>
-          <S.Kicker>Restaurants</S.Kicker>
+          <S.Kicker>Restaurantes</S.Kicker>
           <h1>Restaurantes do gerente</h1>
         </div>
-        <span>{loading ? 'Carregando...' : `${restaurants.length} cards`}</span>
+        <span>{loading ? 'Carregando...' : `${restaurants.length}`}</span>
       </S.SectionHeader>
 
       {error ? <S.Notice>{error}</S.Notice> : null}

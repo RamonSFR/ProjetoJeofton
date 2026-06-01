@@ -299,6 +299,23 @@ export const Notice = styled.div`
   line-height: 1.7;
 `
 
+export const FeedbackBanner = styled.div<{ $variant: 'success' | 'error' }>`
+  padding: 16px 18px;
+  border-radius: 18px;
+  line-height: 1.6;
+  border: 1px solid
+    ${({ $variant }) =>
+      $variant === 'success'
+        ? 'rgba(132, 204, 22, 0.32)'
+        : 'rgba(248, 113, 113, 0.32)'};
+  background: ${({ $variant }) =>
+    $variant === 'success'
+      ? 'rgba(132, 204, 22, 0.14)'
+      : 'rgba(248, 113, 113, 0.14)'};
+  color: ${c.white1};
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+`
+
 export const EmptyState = styled.div`
   padding: 24px;
   border-radius: 24px;
@@ -397,6 +414,14 @@ export const Toolbar = styled.div`
   gap: 12px;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 16px;
+`
+
+export const ToolbarActions = styled.div`
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 `
 
 export const FormCard = styled.div`
@@ -466,6 +491,70 @@ export const DangerButton = styled.button`
   ${buttonBase}
   background: rgba(248, 113, 113, 0.16);
   color: ${c.white1};
+`
+
+export const AddButton = styled.button`
+  ${buttonBase}
+  background: linear-gradient(135deg, ${c.red1}, ${c.red3});
+  color: ${c.white2};
+`
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(14px);
+`
+
+export const ModalDialog = styled.div`
+  width: min(760px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 24px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(217, 119, 6, 0.16),
+      transparent 28%
+    ),
+    linear-gradient(145deg, rgba(18, 27, 42, 0.98), rgba(9, 17, 29, 0.98));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+`
+
+export const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+
+  h3 {
+    margin-top: 8px;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+  }
+`
+
+export const ModalCloseButton = styled.button`
+  ${buttonBase}
+  background: rgba(255, 255, 255, 0.08);
+  color: ${c.white1};
+  min-width: 40px;
+  width: 40px;
+  padding: 0;
+  border-radius: 999px;
+`
+
+export const ModalForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `
 
 export const ProductGrid = styled.div`

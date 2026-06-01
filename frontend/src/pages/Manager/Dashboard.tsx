@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 
 import { getOrders, getRestaurantProducts, getRestaurants } from '../../lib/api'
 import { getRestaurantImage } from '../../lib/restaurant-images'
@@ -111,13 +110,13 @@ const Dashboard = () => {
             Gerencie seus restaurantes e acompanhe os pedidos em um único lugar.
           </h1>
           <p>
-            Use a área de Restaurants para abrir um restaurante específico,
+            Use a área de Restaurantes para abrir um restaurante específico,
             editar o menu e acompanhar os pedidos em andamento.
           </p>
         </S.HeroCopy>
 
         <S.HeroPanel>
-          <strong>Atalhos</strong>
+          <strong>Resumo</strong>
           <S.HeroStats>
             <div>
               <span>Restaurantes</span>
@@ -146,7 +145,6 @@ const Dashboard = () => {
               </strong>
             </div>
           </S.HeroStats>
-          <Link to="/manager/restaurants">Abrir restaurants</Link>
         </S.HeroPanel>
       </S.Hero>
 
@@ -157,7 +155,7 @@ const Dashboard = () => {
             <h2>Restaurantes vinculados</h2>
           </div>
           <span>
-            {loading ? 'Carregando...' : `${restaurants.length} cards`}
+            {loading ? 'Carregando...' : `${restaurants.length}`}
           </span>
         </S.SectionHeader>
 

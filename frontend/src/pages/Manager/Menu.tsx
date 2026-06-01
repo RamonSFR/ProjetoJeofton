@@ -17,6 +17,11 @@ type ProductFormState = {
   price: string
 }
 
+type FeedbackState = {
+  type: 'success' | 'error'
+  message: string
+} | null
+
 const initialFormState: ProductFormState = {
   name: '',
   price: ''
@@ -33,10 +38,11 @@ const ManagerMenu = () => {
   const [products, setProducts] = useState<ProductRecord[]>([])
   const [form, setForm] = useState<ProductFormState>(initialFormState)
   const [editingProductId, setEditingProductId] = useState<number | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [feedback, setFeedback] = useState<FeedbackState>(null)
 
   const loadProducts = async () => {
     try {
@@ -65,63 +71,118 @@ const ManagerMenu = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurant.id])
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  useEffect(() => {
+    if (!isModalOpen) return
 
-    try {
-      setSaving(true)
-      setMessage('')
-      setError('')
-
-      if (editingProductId === null) {
-        await createProduct(restaurant.id, {
-          name: form.name.trim(),
-          price: Number(form.price)
-        })
-        setMessage('Produto criado com sucesso.')
-      } else {
-        await updateProduct(restaurant.id, editingProductId, {
-          name: form.name.trim(),
-          price: Number(form.price)
-        })
-        setMessage('Produto atualizado com sucesso.')
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsModalOpen(false)
       }
-
-      setForm(initialFormState)
-      setEditingProductId(null)
-      await loadProducts()
-    } catch (saveError) {
-      setError(
-        saveError instanceof Error
-          ? saveError.message
-          : 'Unable to save product.'
-      )
-    } finally {
-      setSaving(false)
     }
+
+    window.addEventListener('keydown', handleEscape)
+
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isModalOpen])
+
+  const openAddModal = () => {
+    setEditingProductId(null)
+    setForm(initialFormState)
+    setError('')
+    setFeedback(null)
+    setIsModalOpen(true)
   }
 
-  const handleEdit = (product: ProductRecord) => {
+  const openEditModal = (product: ProductRecord) => {
     setEditingProductId(product.id)
     setForm({
       name: product.name,
       price: String(product.price)
     })
+    setError('')
+    setFeedback(null)
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const parsedPrice = Number(form.price)
+
+    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+      setFeedback({
+        type: 'error',
+        message: 'O preço do prato precisa ser maior que zero.'
+      })
+      return
+    }
+
+    try {
+      setSaving(true)
+      setError('')
+
+      if (editingProductId === null) {
+        await createProduct(restaurant.id, {
+          name: form.name.trim(),
+          price: parsedPrice
+        })
+        setFeedback({
+          type: 'success',
+          message: 'Produto criado com sucesso.'
+        })
+      } else {
+        await updateProduct(restaurant.id, editingProductId, {
+          name: form.name.trim(),
+          price: parsedPrice
+        })
+        setFeedback({
+          type: 'success',
+          message: 'Produto atualizado com sucesso.'
+        })
+      }
+
+      await loadProducts()
+
+      if (editingProductId === null) {
+        setForm(initialFormState)
+      }
+
+      setEditingProductId(null)
+    } catch (saveError) {
+      setFeedback({
+        type: 'error',
+        message:
+          saveError instanceof Error
+            ? saveError.message
+            : 'Unable to save product.'
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleDelete = async (productId: number) => {
     try {
       setSaving(true)
-      setMessage('')
+      setFeedback(null)
       await deleteProduct(restaurant.id, productId)
       await loadProducts()
-      setMessage('Produto removido.')
+      setFeedback({
+        type: 'success',
+        message: 'Produto removido.'
+      })
     } catch (deleteError) {
-      setError(
-        deleteError instanceof Error
-          ? deleteError.message
-          : 'Unable to delete product.'
-      )
+      setFeedback({
+        type: 'error',
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : 'Unable to delete product.'
+      })
     } finally {
       setSaving(false)
     }
@@ -134,72 +195,97 @@ const ManagerMenu = () => {
           <S.Kicker>Menu</S.Kicker>
           <h2>Cardápio de {restaurant.name}</h2>
         </div>
-        <span>{loading ? 'Carregando...' : `${products.length} itens`}</span>
+        <S.ToolbarActions>
+          <span>{loading ? 'Carregando...' : `${products.length} itens`}</span>
+          <S.AddButton type="button" onClick={openAddModal}>
+            Adicionar
+          </S.AddButton>
+        </S.ToolbarActions>
       </S.Toolbar>
 
       {error ? <S.Notice>{error}</S.Notice> : null}
-      {message ? <S.Notice>{message}</S.Notice> : null}
 
-      <S.FormCard>
-        <S.SectionHeader>
-          <div>
-            <S.Kicker>
-              {editingProductId === null ? 'Adicionar' : 'Editar'}
-            </S.Kicker>
-            <h3>
-              {editingProductId === null
-                ? 'Novo item de menu'
-                : `Editar item #${editingProductId}`}
-            </h3>
-          </div>
-        </S.SectionHeader>
+      {isModalOpen ? (
+        <S.ModalOverlay onClick={closeModal} role="presentation">
+          <S.ModalDialog
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <S.ModalHeader>
+              <div>
+                <S.Kicker>
+                  {editingProductId === null ? 'Adicionar' : 'Editar'}
+                </S.Kicker>
+                <h3>
+                  {editingProductId === null
+                    ? 'Novo item de menu'
+                    : `Editar item #${editingProductId}`}
+                </h3>
+              </div>
 
-        <form onSubmit={handleSubmit}>
-          <S.FieldGrid>
-            <S.Input
-              value={form.name}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, name: event.target.value }))
-              }
-              placeholder="Nome do prato"
-              required
-            />
-            <S.Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.price}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  price: event.target.value
-                }))
-              }
-              placeholder="Preço"
-              required
-            />
-          </S.FieldGrid>
-
-          <S.ButtonRow>
-            <S.PrimaryButton type="submit" disabled={saving}>
-              {editingProductId === null
-                ? 'Adicionar item'
-                : 'Salvar alterações'}
-            </S.PrimaryButton>
-            {editingProductId !== null ? (
-              <S.SecondaryButton
+              <S.ModalCloseButton
                 type="button"
-                onClick={() => {
-                  setEditingProductId(null)
-                  setForm(initialFormState)
-                }}
+                onClick={closeModal}
+                aria-label="Fechar modal"
               >
-                Cancelar edição
-              </S.SecondaryButton>
-            ) : null}
-          </S.ButtonRow>
-        </form>
-      </S.FormCard>
+                ×
+              </S.ModalCloseButton>
+            </S.ModalHeader>
+
+            <S.ModalForm onSubmit={handleSubmit}>
+              {feedback ? (
+                <S.FeedbackBanner
+                  $variant={feedback.type}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {feedback.message}
+                </S.FeedbackBanner>
+              ) : null}
+
+              <S.FieldGrid>
+                <S.Input
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      name: event.target.value
+                    }))
+                  }
+                  placeholder="Nome do prato"
+                  required
+                />
+                <S.Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.price}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      price: event.target.value
+                    }))
+                  }
+                  placeholder="Preço"
+                  required
+                />
+              </S.FieldGrid>
+
+              <S.ButtonRow>
+                <S.PrimaryButton type="submit" disabled={saving}>
+                  {editingProductId === null
+                    ? 'Adicionar item'
+                    : 'Salvar alterações'}
+                </S.PrimaryButton>
+                <S.SecondaryButton type="button" onClick={closeModal}>
+                  Cancelar
+                </S.SecondaryButton>
+              </S.ButtonRow>
+            </S.ModalForm>
+          </S.ModalDialog>
+        </S.ModalOverlay>
+      ) : null}
 
       <S.ProductGrid>
         {products.map((product) => (
@@ -210,7 +296,7 @@ const ManagerMenu = () => {
             <S.ProductActions>
               <S.SecondaryButton
                 type="button"
-                onClick={() => handleEdit(product)}
+                onClick={() => openEditModal(product)}
               >
                 Editar
               </S.SecondaryButton>

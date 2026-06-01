@@ -51,7 +51,7 @@ const Manager = () => {
             to="/manager/restaurants"
             className={({ isActive }) => (isActive ? 'active' : '')}
           >
-            Restaurants
+            Restaurantes
           </NavLink>
           <NavLink
             to="/manager"
