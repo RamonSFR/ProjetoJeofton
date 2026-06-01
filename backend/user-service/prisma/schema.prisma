@@ -1,6 +1,7 @@
 enum Role {
   CLIENTE
   GERENTE
+  @@map("role")
 }
 
 generator client {
@@ -17,7 +18,7 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      Role     @default(CLIENTE)
+  role      Role    @default(CLIENTE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

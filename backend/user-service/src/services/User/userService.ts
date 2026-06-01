@@ -9,8 +9,10 @@ type UserUpdateData = Partial<UserCreateData>;
 const frontendRoleToDbRole = (role: "client" | "manager") =>
   role === "manager" ? "GERENTE" : "CLIENTE";
 
-const lowerDbRoleToDbEnum = (roleLower: "cliente" | "gerente") =>
-  roleLower === "gerente" ? "GERENTE" : "CLIENTE";
+const lowerDbRoleToDbEnum = (roleLower: string) =>
+  (roleLower || "").toString().toLowerCase() === "gerente"
+    ? "GERENTE"
+    : "CLIENTE";
 
 export type PaginatedUsersResult = {
   data: Omit<UserModel, "password">[];
