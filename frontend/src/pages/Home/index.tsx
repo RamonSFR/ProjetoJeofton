@@ -97,7 +97,7 @@ const Home = () => {
               />
               <S.RestaurantCardBody>
                 <strong>{restaurant.name}</strong>
-                <span>Open menu</span>
+                <span>Ver Menu</span>
               </S.RestaurantCardBody>
             </S.RestaurantCard>
           ))}
