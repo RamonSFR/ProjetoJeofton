@@ -88,7 +88,7 @@ const ManagerRestaurantWorkspace = () => {
     <S.Section>
       <S.Hero>
         <S.HeroCopy>
-          <S.Kicker>Restaurant</S.Kicker>
+          <S.Kicker>Restaurante</S.Kicker>
           <h1>{restaurant.name}</h1>
           <p>
             Use as abas abaixo para editar o menu e acompanhar os pedidos deste
@@ -104,7 +104,7 @@ const ManagerRestaurantWorkspace = () => {
               <strong>{restaurant.id}</strong>
             </div>
             <div>
-              <span>Manager</span>
+              <span>Gerente(s)</span>
               <strong>{restaurant.managerId}</strong>
             </div>
             <div>

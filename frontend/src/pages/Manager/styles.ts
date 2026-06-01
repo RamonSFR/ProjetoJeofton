@@ -227,6 +227,10 @@ export const HeroPanel = styled.aside`
   flex-direction: column;
   justify-content: space-between;
   gap: 16px;
+
+  img {
+    width: 100%;
+  }
 `
 
 export const HeroStats = styled.div`

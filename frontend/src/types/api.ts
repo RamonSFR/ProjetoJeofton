@@ -34,9 +34,10 @@ export interface ProductRecord {
 export interface OrderItemRecord {
   id?: number
   productId: number
-  productNameSnapshot: string
+  productNameSnapshot?: string
+  productName?: string
   quantity: number
-  unitPrice: string
+  unitPrice: string | number
 }
 
 export interface OrderRecord {
@@ -46,7 +47,8 @@ export interface OrderRecord {
   customerId: number
   customerName?: string
   customerEmail?: string
-  total: string
+  total?: string | number
+  totalAmount?: string | number
   status: OrderStatus
   deliveryAddressSnapshot?: string | null
   items?: OrderItemRecord[]

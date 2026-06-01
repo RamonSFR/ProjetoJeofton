@@ -15,6 +15,25 @@ type RestaurantSummary = {
 
 const getOrderId = (order: OrderRecord) => order.id ?? order.orderId ?? 0
 
+const getOrderTotal = (order: OrderRecord) => {
+  const raw = order.total ?? order.totalAmount
+
+  if (typeof raw === 'number') {
+    return raw
+  }
+
+  if (typeof raw === 'string') {
+    const cleaned = raw.replace(/,/g, '.').replace(/[^0-9.-]/g, '')
+    const parsed = Number(cleaned)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  return 0
+}
+
+const getItemName = (productName?: string, productNameSnapshot?: string) =>
+  productName ?? productNameSnapshot ?? 'Item sem nome'
+
 const Dashboard = () => {
   const session = useSession()
   const moneyFormatter = useMemo(
@@ -151,12 +170,10 @@ const Dashboard = () => {
       <S.Section>
         <S.SectionHeader>
           <div>
-            <S.Kicker>Restaurants</S.Kicker>
+            <S.Kicker>Restaurantes</S.Kicker>
             <h2>Restaurantes vinculados</h2>
           </div>
-          <span>
-            {loading ? 'Carregando...' : `${restaurants.length}`}
-          </span>
+          <span>{loading ? 'Carregando...' : `${restaurants.length}`}</span>
         </S.SectionHeader>
 
         <S.CardGrid>
@@ -203,7 +220,18 @@ const Dashboard = () => {
             recentOrders.slice(0, 6).map((order) => (
               <S.Notice key={getOrderId(order)}>
                 Pedido #{getOrderId(order)} - Restaurante #{order.restaurantId}{' '}
-                - {order.status} - {moneyFormatter.format(Number(order.total))}
+                - {order.status} - {moneyFormatter.format(getOrderTotal(order))}
+                {order.items?.length ? (
+                  <>
+                    {' '}
+                    -{' '}
+                    {order.items
+                      .map((item) =>
+                        getItemName(item.productName, item.productNameSnapshot)
+                      )
+                      .join(', ')}
+                  </>
+                ) : null}
               </S.Notice>
             ))
           )}

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 
 import { getOrders, updateOrderStatus } from '../../lib/api'
-import type { OrderRecord, OrderStatus } from '../../types/api'
+import type { OrderRecord, OrderStatus, OrderItemRecord } from '../../types/api'
 
 import { type ManagerRestaurantContext } from './RestaurantWorkspace'
 import * as S from './styles'
@@ -15,12 +15,26 @@ const ORDER_STATUS_OPTIONS: OrderStatus[] = [
   'CANCELLED'
 ]
 
-const formatCurrency = (value: string | number) => {
-  const parsed = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
+const getOrderId = (order: OrderRecord) => order.id ?? order.orderId ?? 0
+
+const getOrderTotal = (order: OrderRecord) => {
+  const raw = order.total ?? order.totalAmount
+
+  if (typeof raw === 'number') {
+    return raw
+  }
+
+  if (typeof raw === 'string') {
+    const cleaned = raw.replace(/,/g, '.').replace(/[^0-9.-]/g, '')
+    const parsed = Number(cleaned)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  return 0
 }
 
-const getOrderId = (order: OrderRecord) => order.id ?? order.orderId ?? 0
+const getItemName = (item: OrderItemRecord) =>
+  item.productName ?? item.productNameSnapshot ?? 'Item sem nome'
 
 const ManagerOrders = () => {
   const { restaurant } = useOutletContext<ManagerRestaurantContext>()
@@ -120,7 +134,7 @@ const ManagerOrders = () => {
       <S.OrderList>
         {orders.map((order) => {
           const orderId = getOrderId(order)
-          const total = moneyFormatter.format(formatCurrency(order.total))
+          const total = moneyFormatter.format(getOrderTotal(order))
 
           return (
             <S.OrderCard key={orderId}>
@@ -140,8 +154,8 @@ const ManagerOrders = () => {
                   <strong>Itens</strong>
                   <ul>
                     {order.items?.map((item) => (
-                      <li key={`${order.id}-${item.productId}`}>
-                        {item.productNameSnapshot} x{item.quantity}
+                      <li key={`${orderId}-${item.productId}`}>
+                        {getItemName(item)} x{item.quantity}
                       </li>
                     ))}
                   </ul>
