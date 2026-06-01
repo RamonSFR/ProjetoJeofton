@@ -10,11 +10,14 @@ const cpfSchema = z
   .transform((value) => value.replace(/\D/g, ""))
   .pipe(z.string().length(11, "CPF deve conter 11 digitos"));
 
+const dbUserRoleSchema = z.enum(["cliente", "gerente"]);
+
 export const createUserBodySchema = z.object({
   cpf: cpfSchema,
   name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().trim().email("E-mail invalido"),
   password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
+  role: dbUserRoleSchema.default("cliente"),
 });
 
 export const updateUserBodySchema = createUserBodySchema
@@ -34,6 +37,7 @@ export const getUserByEmailQuerySchema = z.object({
 export const loginBodySchema = z.object({
   email: z.string().trim().email("E-mail invalido"),
   password: z.string().min(1, "Senha obrigatoria"),
+  role: z.enum(["client", "manager"]),
 });
 
 export const getUsersQuerySchema = z.object({

@@ -39,9 +39,10 @@ const Login = () => {
 
       const user = await loginUser({
         email: email.trim(),
-        password
+        password,
+        role: loginState
       })
-      saveSession(user, loginState)
+      saveSession(user, user.role ?? loginState)
       dispatch(clearCart())
       setFeedback({
         type: 'success',
@@ -49,7 +50,7 @@ const Login = () => {
       })
 
       const timer = window.setTimeout(() => {
-        navigate('/')
+        navigate(loginState === 'manager' ? '/manager' : '/')
       }, 900)
 
       ;(window as Window & { __loginTimer?: number }).__loginTimer = timer

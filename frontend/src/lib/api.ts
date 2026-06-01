@@ -78,7 +78,11 @@ export const getUsers = (page = 1, pageSize = 20) =>
 export const getUserByEmail = (email: string) =>
   request<UserRecord>(USER_SERVICE_BASE_URL, `/email${buildQuery({ email })}`)
 
-export const loginUser = (payload: { email: string; password: string }) =>
+export const loginUser = (payload: {
+  email: string
+  password: string
+  role: 'client' | 'manager'
+}) =>
   request<UserRecord>(USER_SERVICE_BASE_URL, '/login', {
     method: 'POST',
     body: JSON.stringify(payload)

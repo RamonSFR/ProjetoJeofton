@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import RestaurantDetails from './pages/RestaurantDetails'
 import Pedidos from './pages/Pedidos'
 import Cart from './pages/Cart'
+import Manager from './pages/Manager'
 
 const AppRoutes = () => (
   <Routes>
@@ -14,6 +15,7 @@ const AppRoutes = () => (
     <Route path="/login" element={<Login />} />
     <Route path="/orders" element={<Pedidos />} />
     <Route path="/cart" element={<Cart />} />
+    <Route path="/manager" element={<Manager />} />
     <Route path="/Pedidos" element={<Navigate to="/orders" replace />} />
     <Route path="*" element={<Home />} />
   </Routes>
